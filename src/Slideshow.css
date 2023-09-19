@@ -1,0 +1,16 @@
+.slideshow-container {
+  display: flex;
+  overflow: hidden;
+  width: 100%;
+}
+
+.slide {
+  min-width: 100%;
+  animation: slide 5s linear infinite;
+}
+
+.hide-checkbox .record-component .MuiDataGrid-colCellCheckbox,
+.hide-checkbox .record-component .MuiDataGrid-cellCheckbox {
+  display: none;
+}
+
