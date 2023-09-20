@@ -20,32 +20,38 @@ export default function Main() {
   const handleLogout = () => {
     setIsLoggedIn(false);
     setSelectedTab(3);
-    navigate('/');
+    navigate("/MiniProject_LicensePlate");
   };
 
   const handleLogin = () => {
     setIsLoggedIn(true);
-    if (setIsLoggedIn) {
-      handleTabChange(0);
-      navigate("/main/record");
-      // handleTabChange(1);
-      // setSelectedTab(1);
-    }
+    handleTabChange(0);
+    navigate("/MiniProject_LicensePlate/main");
+    // handleTabChange(1);
+    // setSelectedTab(1);
   };
 
   return (
-    <Box sx={{ width: '100%', height: '100vh' }}>
+    <Box sx={{ width: "100%", height: "100vh" }}>
       <CustomizedTabs
         isLoggedIn={isLoggedIn}
         onTabChange={handleTabChange}
-        onLogout={handleLogout}
         onLogin={handleLogin}
+        onLogout={handleLogout}
       />
       {selectedTab === 0 && <Record />}
       {selectedTab === 1 && <Search selectedTab={selectedTab} />}
       {selectedTab === 2 && <Enroll />}
-      {selectedTab === 3 && <Login onLogin={handleLogin} onTabChange={handleTabChange} onLogout={handleLogout} isLoggedIn={isLoggedIn}
-        setIsLoggedIn={setIsLoggedIn} selectedTab={selectedTab} />}
+      {selectedTab === 3 && (
+        <Login
+          onLogin={handleLogin}
+          onTabChange={handleTabChange}
+          onLogout={handleLogout}
+          isLoggedIn={isLoggedIn}
+          setIsLoggedIn={setIsLoggedIn}
+          selectedTab={selectedTab}
+        />
+      )}
     </Box>
   );
 }

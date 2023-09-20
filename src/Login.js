@@ -53,9 +53,6 @@ export default function Login({ onLogin }) {
         localStorage.setItem("role", data.role);
 
         onLogin();
-        // setIsLoggedIn(true);
-        // onTabChange(1);
-        // navigate("/main/record");
       } else {
         setOpen(true);
       }

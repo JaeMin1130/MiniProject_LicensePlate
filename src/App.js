@@ -27,7 +27,6 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/MiniProject_LicensePlate" element={<Login />} />
-          {/* <Route path="/MiniProject_LicensePlate/*" element={<Main />} /> */}
           <Route path="/MiniProject_LicensePlate/user/signup" element={<Join />} />
           <Route path="/MiniProject_LicensePlate/main/*" element={<Main />} />
         </Routes>
