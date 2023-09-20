@@ -27,8 +27,6 @@ export default function Main() {
     setIsLoggedIn(true);
     handleTabChange(0);
     navigate("/MiniProject_LicensePlate/main");
-    // handleTabChange(1);
-    // setSelectedTab(1);
   };
 
   return (
@@ -42,16 +40,7 @@ export default function Main() {
       {selectedTab === 0 && <Record />}
       {selectedTab === 1 && <Search selectedTab={selectedTab} />}
       {selectedTab === 2 && <Enroll />}
-      {selectedTab === 3 && (
-        <Login
-          onLogin={handleLogin}
-          onTabChange={handleTabChange}
-          onLogout={handleLogout}
-          isLoggedIn={isLoggedIn}
-          setIsLoggedIn={setIsLoggedIn}
-          selectedTab={selectedTab}
-        />
-      )}
+      {selectedTab === 3 && <Login handleLogin={handleLogin} />}
     </Box>
   );
 }

@@ -18,7 +18,7 @@ import { useEffect, useState } from "react";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
-export default function Login({ onLogin }) {
+export default function Login({ handleLogin }) {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -50,9 +50,9 @@ export default function Login({ onLogin }) {
       if (data.status === 200) {
         const accessToken = data.data.accessToken;
         localStorage.setItem("ACCESS_TOKEN", accessToken);
-        localStorage.setItem("role", data.role);
-
-        onLogin();
+        localStorage.setItem("role", data.data.role);
+        handleLogin();
+        // navigate("/MiniProject_LicensePlate/main");
       } else {
         setOpen(true);
       }
@@ -60,8 +60,6 @@ export default function Login({ onLogin }) {
       console.error("Error during API call:", error);
     }
   };
-
-  useEffect(() => {}, []);
 
   return (
     <Box sx={{ width: "100%" }}>
