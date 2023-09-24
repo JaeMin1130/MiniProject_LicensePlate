@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function Main() {
-  const [selectedTab, setSelectedTab] = useState(3);
+  const [selectedTab, setSelectedTab] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const navigate = useNavigate();
@@ -31,16 +31,10 @@ export default function Main() {
 
   return (
     <Box sx={{ width: "100%", height: "100vh" }}>
-      <CustomizedTabs
-        isLoggedIn={isLoggedIn}
-        onTabChange={handleTabChange}
-        onLogin={handleLogin}
-        onLogout={handleLogout}
-      />
+      <CustomizedTabs isLoggedIn={true} onTabChange={handleTabChange} onLogin={handleLogin} onLogout={handleLogout} />
       {selectedTab === 0 && <Record />}
       {selectedTab === 1 && <Search selectedTab={selectedTab} />}
       {selectedTab === 2 && <Enroll />}
-      {selectedTab === 3 && <Login handleLogin={handleLogin} />}
     </Box>
   );
 }

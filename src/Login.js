@@ -51,8 +51,8 @@ export default function Login({ handleLogin }) {
         const accessToken = data.data.accessToken;
         localStorage.setItem("ACCESS_TOKEN", accessToken);
         localStorage.setItem("role", data.data.role);
-        handleLogin();
-        // navigate("/MiniProject_LicensePlate/main");
+        // handleLogin();
+        navigate("/MiniProject_LicensePlate/main");
       } else {
         setOpen(true);
       }

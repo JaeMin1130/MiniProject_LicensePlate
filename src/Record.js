@@ -26,9 +26,7 @@ export default function Record() {
   const [plateImage, setPlateImage] = useState(null);
 
   // rows 상태가 변경될 때마다 재랜더링 ([] <-종속성에 추가)
-  useEffect(() => {
-
-  }, [rows]);
+  useEffect(() => {}, [rows]);
 
   useEffect(() => {
     const today = dayjs();
@@ -37,7 +35,6 @@ export default function Record() {
 
   // 3.차량 출입 로그 기록
   const showRecord = async (imageSrc) => {
-
     const formData = new FormData();
 
     formData.append("file", imageSrc);
@@ -53,9 +50,8 @@ export default function Record() {
       });
 
       if (response.data.status === 500) {
-
       }
-
+      console.log("response.data", response.data);
       const data = response.data.data[0];
       const plateImage = data.plateImage;
       const item = response.data.data[1];
@@ -96,7 +92,6 @@ export default function Record() {
 
   // 4.날짜별 로그 조회
   const onQuerySubmit = async (startDate, endDate) => {
-
     const jsStartDate = startDate.toDate();
     const jsEndDate = endDate.toDate();
 
@@ -106,7 +101,7 @@ export default function Record() {
     call(`/main/search/date/${formattedStartDate}/${formattedEndDate}`, "GET", null)
       .then((data) => {
         const responseData = data.data;
-      
+
         if (Array.isArray(responseData)) {
           const updatedRows = responseData
             .map((record, index) => {
@@ -188,7 +183,6 @@ export default function Record() {
             width: "35%",
             border: "1px solid rgb(189, 188, 188)",
             display: "flex",
-
           }}
         >
           <Predict rows={rows} data={responseData} isLoading={isLoading} plateImage={plateImage} />
