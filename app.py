@@ -11,13 +11,13 @@ from PIL import Image
 import datetime
 import torch
 from tempfile import NamedTemporaryFile
+import model1_YOLOv5 as yolo
 import model2_esrgan_super_resolution as esrgan
 import model3_easy_ocr as ocr
 import model4_roboflow_license_number_extractor as robo
-import model_YOLOv5 as yolo
 import model5_num_classification_YOLO as ncy
 
-load_dotenv()  # Load variables from .env file
+load_dotenv() 
 
 aws_access_key = os.environ.get('AWS_ACCESS_KEY_ID')
 aws_secret_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
@@ -45,7 +45,7 @@ file_name = str(uuid.uuid4()) + ".jpg"
 # 이미지 흑백 변경후 이미지
 after_path = f"./super_resolution/{file_name}"
 
-@app.route("/main/record", methods=["GET", "POST"])
+@app.route("/main/record", methods=["POST"])
 def predict():
     if request.method == "POST":
         if "file" not in request.files:
@@ -58,7 +58,7 @@ def predict():
         img_bytes = file.read()
         img = Image.open(io.BytesIO(img_bytes))
 
-        # Step 1: YOLOv5
+        # 1. YOLOv5s : 현장 사진에서 번호판 인식
         try:
             with NamedTemporaryFile(delete=False, suffix=".jpg") as temp_img_file:
                 temp_img_file.write(img_bytes)
@@ -73,7 +73,7 @@ def predict():
         file_path_name = f"./{file_name}"
         print("step1 passed")
 
-        # Step 3: Plate Preprocessing (Super-Resolution)
+        # 2. ESRGAN : 번호판 선명하게
         try:
             esrgan.model_result(file_path_name, after_path)
             print("file_path_name", file_path_name)
@@ -82,29 +82,26 @@ def predict():
             os.remove(file_path_name)
             return jsonify({"status":500, "error": str(e)}) 
 
-       # Open the processed image using PIL
         plate_img = Image.open(after_path)
 
-        # Save the PIL image to a temporary file
         with NamedTemporaryFile(delete=False, suffix=".jpg") as temp_plate_img_file:
             plate_img.save(temp_plate_img_file, format='JPEG')
 
-        # Upload the temporary file to Amazon S3
+        # 번호판 이미지 s3에 업로드
         with open(temp_plate_img_file.name, 'rb') as plate_file:
             success, img_url, img_title = upload_to_s3_and_get_url(plate_file, 'licenseplate-iru', 'total/plate')
 
-        # Remove the temporary file
         os.remove(temp_plate_img_file.name)
 
-        # Step 4: Number Result 2 (OCR)
+        # 3. OCR
         ocr_result = ocr.model_result(after_path)
         print("step4 passed")
 
-        # Step 5: Number Result 3 (License Number Extraction)
+        # 4. CNN
         robo_result = robo.model_result(after_path)
         print("step5 passed")
 
-        # Step 6: Number Result 4 (YOLOv5)
+        # 5. YOLOv5x
         try:
             yolo_result = ncy.load_yolo(after_path)
         except Exception as e:
@@ -126,4 +123,4 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Flask app exposing yolov5 models")
     parser.add_argument("--port", default=5000, type=int, help="port number")
     args = parser.parse_args()
-    app.run(host="localhost")  # debug=True causes Restarting with stat
+    app.run(host="localhost") 
