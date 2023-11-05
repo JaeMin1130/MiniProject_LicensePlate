@@ -58,51 +58,31 @@
 - [x] 출입 기록 수정/삭제 히스토리 기능 
 
 ## 5. 서비스 아키텍처
-![image](https://github.com/EUNJIN6131/MiniProject_LicensePlate/assets/98063854/a3aecb4f-44cc-4274-9fa0-788e230fe504)
-
-## 6. 화면 구성
-| 로그인 페이지  |  회원가입 페이지   |
-| :-------------------------------------------: | :------------: |
-|  <img width="450" height="350"  src="https://github.com/EUNJIN6131/MiniProject_LicensePlate/assets/129818813/0d2a3f2b-4663-4003-a8b1-80bb42acb0b3"/> |  <img width="450" height="350" src="https://github.com/EUNJIN6131/MiniProject_LicensePlate/assets/129818813/398cbe50-a0a7-4272-b3b7-38f3bfe0bc00"/>|  
-
-| 메인 페이지(차량 입출입 현황)  |  메인 페이지(차량 검색)   |  
-| :-------------------------------------------: | :------------: |
-| <img width="450" height="350" src="https://github.com/EUNJIN6131/MiniProject_LicensePlate/assets/129818813/4d26aa28-a936-4751-97aa-e15f5d81e9b9"/>   |  <img width="450" height="350" src="https://github.com/EUNJIN6131/MiniProject_LicensePlate/assets/129818813/ae1061e6-67dc-4eb9-8afb-db93087a7077"/>|
-
-| 메인 페이지(날짜 조회)  |  메인 페이지(관리자 권한 기능)   |
-| :-------------------------------------------: | :------------: |
-|  <img width="450" height="350"  src="https://github.com/EUNJIN6131/MiniProject_LicensePlate/assets/129818813/72b93fac-755f-4010-81ba-db38432ae527"/> |  <img width="450" height="350"  src="https://github.com/EUNJIN6131/MiniProject_LicensePlate/assets/129818813/00512f7f-8f9c-411e-8cb2-49cd722987fb"/>|  
-
-| 메인 페이지(수정/삭제 기록)  |
-| :-------------------------------------------: |
-|  <img width="450" height="350" src="https://github.com/EUNJIN6131/MiniProject_LicensePlate/assets/129818813/adc6aa2d-302f-49c7-a2d4-b6a4ab2dc37c"/> |
-
-| 시연 영상  |
-| :-------------------------------------------: | 
-|   <img width="900" height="600" src="https://github.com/EUNJIN6131/MiniProject_LicensePlate/assets/129818813/63260f92-db31-4891-8512-ead532c36c1d"> |
+![image](https://github.com/JaeMin1130/MiniProject_LicensePlate/assets/98063854/51f47020-dab4-4188-9b3b-a2526080841c)
 
 ## 7. REST API 명세 
 ### Spring Boot
 | ID | Method | URI | Params | Return | Description |
 | --- | --- | --- | --- | --- | --- |
-| 1 | POST  | /user/signup | UserDto userDto | Boolean | 회원가입 |
-| 2 | POST | /user/signin | UserDto userDto | UserDto | 로그인 |
-| 3 | POST | /main/record | MultipartFile file | List<LogDto> | 로그 기록 |
-| 4 | GET | /main/search/date | Date start, Date end | List<LogDto> | 날짜별 조회 |
-| 5 | GET | /main/search/plate | String plate | List<LogDto> | 차량번호별 조회 |
-| 6 | GET | /main/history |  | List<HistoryDto> | 수정/삭제 기록 조회 |
-| 7 | PUT | /main/update | List<LogDto> list | Boolean | 로그 수정(admin) |
-| 8 | DELETE              | /main/delete | List<LogDto> list | Boolean | 로그 삭제(admin) |
+| 1 | POST  | api/members/sign-up | MemberDto  | Boolean | 회원가입 |
+| 2 | POST | api/members/sign-in | MemberDto  | MemberDto  | 로그인 |
+| 3 | POST | api/records | MultipartFile  | List<RecordDto> | 차량 출입 기록 |
+| 4 | GET | api/records/date/{date1}/{date2} | String, String  | List<RecordDto> | 날짜별 기록 조회 |
+| 5 | GET | api/records/plate/{plate} | String | List<RecordDto> | 차량 번호별 기록 조회 |
+| 7 | PUT | api/records | List<RecordDto> | Boolean | 기록 수정 |
+| 8 | DELETE              | api/records | List<RecordDto>  | Boolean | 기록 삭제 |
+| 6 | GET | api/records/history |  | List<HistoryDto> | 수정/삭제 기록 조회 |
+
 ### Flask
 | ID | Method | URI | Params | Return | Description |
 | --- | --- | --- | --- | --- | --- |
-| 3 | POST | /main/record | MultipartFile file | LogDto | 로그 기록 |
+| 3 | POST | api/records | MultipartFile file | PredictDto | AI 모델 번호판 예측 |
 
 ## 8. DB 설계(ERD)
-![image](https://github.com/EUNJIN6131/MiniProject_LicensePlate/assets/98063854/3ac64e86-1ea1-4fbf-a5da-becd6a1e6738)
+![image](https://github.com/JaeMin1130/MiniProject_LicensePlate/assets/98063854/d23d592a-b65e-4f65-87c8-9cb688fbf6fd)
 
 ## 9. 시퀀스 다이어그램
-![image](https://github.com/EUNJIN6131/MiniProject_LicensePlate/assets/98063854/06b3d3fe-42a4-4a96-92ff-7e23b56b9064)
+![image](https://github.com/JaeMin1130/MiniProject_LicensePlate/assets/98063854/7916fabc-03d7-4593-bba2-d198cf1da670)
 
 ## 10. UML(Class Diagram)
 ![image](https://github.com/EUNJIN6131/MiniProject_LicensePlate/assets/98063854/7928338d-5949-4158-8b05-b5059c61c8cc)
