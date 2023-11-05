@@ -18,7 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 import plate.back.dto.ResponseDto;
-import plate.back.lib.RateLimiter;
+import plate.back.utils.RateLimiter;
 
 @RequiredArgsConstructor
 @Service

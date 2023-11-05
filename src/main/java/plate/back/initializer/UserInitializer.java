@@ -6,7 +6,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
-import plate.back.entity.UserEntity;
+import plate.back.entity.Member;
 import plate.back.enums.Authority;
 import plate.back.persistence.UserRepository;
 
@@ -20,11 +20,11 @@ public class UserInitializer implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
 
-        userRepo.save(UserEntity.builder()
-                .userId("mary")
+        userRepo.save(Member.builder()
+                .memberId("mary")
                 .password(passwordEncoder.encode("1234"))
                 .name("Mary")
-                .role(Authority.ROLE_ADMIN.name())
+                .role(Authority.ROLE_ADMIN)
                 .build());
     }
 }

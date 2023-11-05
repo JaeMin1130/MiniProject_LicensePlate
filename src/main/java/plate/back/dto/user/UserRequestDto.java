@@ -11,7 +11,7 @@ public class UserRequestDto {
     public static class SignUp {
 
         @NotEmpty(message = "이메일은 필수 입력값입니다.")
-        private String userId;
+        private String memberId;
 
         @NotEmpty(message = "비밀번호는 필수 입력값입니다.")
         private String password;
@@ -23,31 +23,14 @@ public class UserRequestDto {
     @Getter
     public static class SignIn {
         @NotEmpty(message = "이메일은 필수 입력값입니다.")
-        private String userId;
+        private String memberId;
 
         @NotEmpty(message = "비밀번호는 필수 입력값입니다.")
         private String password;
 
         public UsernamePasswordAuthenticationToken toAuthentication() {
-            return new UsernamePasswordAuthenticationToken(userId, password);
+            return new UsernamePasswordAuthenticationToken(memberId, password);
         }
     }
 
-    @Getter
-    public static class Reissue {
-        @NotEmpty(message = "accessToken 을 입력해주세요.")
-        private String accessToken;
-
-        @NotEmpty(message = "refreshToken 을 입력해주세요.")
-        private String refreshToken;
-    }
-
-    @Getter
-    public static class Logout {
-        @NotEmpty(message = "잘못된 요청입니다.")
-        private String accessToken;
-
-        @NotEmpty(message = "잘못된 요청입니다.")
-        private String refreshToken;
-    }
 }

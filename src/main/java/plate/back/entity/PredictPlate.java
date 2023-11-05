@@ -6,6 +6,7 @@ import org.hibernate.annotations.OnDeleteAction;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -18,20 +19,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
-@Table(name = "predict_log")
-public class PredictLogEntity {
+public class PredictPlate {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(optional = false, cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "log_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false, cascade = CascadeType.REMOVE)
+    @JoinColumn(name = "record_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private LogEntity logEntity;
+    private Record record;
 
     @Column(nullable = false, length = 10)
     private String modelType;
@@ -45,4 +42,12 @@ public class PredictLogEntity {
     @Column(nullable = false)
     private boolean isPresent;
 
+    @Builder
+    public PredictPlate(Record record, String modelType, String predictedText, Double accuracy, boolean isPresent) {
+        this.record = record;
+        this.modelType = modelType;
+        this.predictedText = predictedText;
+        this.accuracy = accuracy;
+        this.isPresent = isPresent;
+    }
 }

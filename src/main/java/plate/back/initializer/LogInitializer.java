@@ -11,14 +11,14 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
-import plate.back.entity.LogEntity;
-import plate.back.persistence.LogRepository;
+import plate.back.entity.Record;
+import plate.back.persistence.RecordRepository;
 
 @RequiredArgsConstructor
 @Component
 public class LogInitializer implements ApplicationRunner {
 
-    private final LogRepository logRepo;
+    private final RecordRepository logRepo;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -39,14 +39,12 @@ public class LogInitializer implements ApplicationRunner {
             int[] randomText = { 1063, 2580, 2591, 3231, 4365, 5061, 6214, 7136, 7979,
                     8080 };
 
-            LogEntity logEntity = logRepo.save(LogEntity.builder()
+            logRepo.save(Record.builder()
                     .licensePlate(String.valueOf(randomText[randomIdx]))
                     .modelType("model")
                     .accuracy((double) randomAccuracy)
                     .state("state")
                     .build());
-            logEntity.setDate(randomDate);
-            logRepo.save(logEntity);
         }
     }
 }

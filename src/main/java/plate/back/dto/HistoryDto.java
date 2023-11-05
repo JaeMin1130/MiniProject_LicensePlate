@@ -13,8 +13,8 @@ import lombok.NoArgsConstructor;
 @Builder
 public class HistoryDto {
     private Integer id;
-    private Integer logId;
-    private String userId;
+    private Integer recordId;
+    private String memberId;
     private String workType;
     private String previousText;
     private String currentText;

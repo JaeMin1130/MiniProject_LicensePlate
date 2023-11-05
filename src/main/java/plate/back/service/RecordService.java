@@ -18,27 +18,29 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import plate.back.dto.HistoryDto;
 import plate.back.dto.ImageDto;
 import plate.back.dto.LogDto;
 import plate.back.dto.PredictDto;
 import plate.back.dto.ResponseDto;
-import plate.back.entity.HistoryEntity;
-import plate.back.entity.ImageEntity;
-import plate.back.entity.LogEntity;
-import plate.back.entity.PredictLogEntity;
+import plate.back.entity.History;
+import plate.back.entity.Image;
+import plate.back.entity.PredictPlate;
+import plate.back.entity.Record;
 import plate.back.persistence.CarInfoRepository;
 import plate.back.persistence.HistoryRepository;
 import plate.back.persistence.ImageRepository;
-import plate.back.persistence.LogRepository;
+import plate.back.persistence.RecordRepository;
 import plate.back.persistence.PredictLogRepository;
 
+@Transactional
 @RequiredArgsConstructor
 @Service
-public class LogService {
+public class RecordService {
     private final CarInfoRepository carRepo;
-    private final LogRepository logRepo;
+    private final RecordRepository recordRepo;
     private final ImageRepository imgRepo;
     private final PredictLogRepository predRepo;
     private final HistoryRepository histRepo;
@@ -61,28 +63,28 @@ public class LogService {
 
         // 번호판 인식 실패
         if ((int) flaskResponse.get("status") == 500) {
-            LogEntity savedLog = logRepo.save(LogEntity.builder()
+            Record savedLog = recordRepo.save(Record.builder()
                     .modelType("인식 실패")
                     .licensePlate("인식 실패")
                     .accuracy(0.0)
                     .state("수정 필요")
                     .build());
+
             // 현장 이미지만 업로드
             String[] vehicleImgArr = fileService.uploadFile(file, 0);
             String vehicleImgUrl = vehicleImgArr[0];
             String vehicleImgTitle = vehicleImgArr[1];
-            ImageEntity vehicleImg = imgRepo.save(ImageEntity.builder()
-                    .logEntity(savedLog)
+            Image vehicleImg = imgRepo.save(Image.builder()
+                    .record(savedLog)
                     .imageUrl(vehicleImgUrl)
                     .imageType("vehicle")
                     .imageTitle(vehicleImgTitle).build());
 
             LogDto dto = LogDto.builder()
-                    .logId(savedLog.getLogId())
+                    .recordId(savedLog.getRecordId())
                     .vehicleImage(vehicleImg.getImageUrl())
                     .plateImage("인식 실패")
                     .state(savedLog.getState())
-                    .date(savedLog.getDate())
                     .modelType("인식 실패")
                     .licensePlate("인식 실패")
                     .accuracy("인식 실패")
@@ -124,7 +126,7 @@ public class LogService {
         }
 
         // Log 엔티티 저장
-        LogEntity savedLog = logRepo.save(LogEntity.builder()
+        Record savedLog = recordRepo.save(Record.builder()
                 .modelType(predList.get(idx).getModelType())
                 .licensePlate(predList.get(idx).getPredictedText())
                 .accuracy(maxVal)
@@ -139,14 +141,14 @@ public class LogService {
         String plateImgUrl = String.valueOf(flaskResponse.get("plateImgUrl"));
         String plateImgTitle = String.valueOf(flaskResponse.get("plateImgTitle"));
 
-        ImageEntity vehicleImg = imgRepo.save(ImageEntity.builder()
-                .logEntity(savedLog)
+        Image vehicleImg = imgRepo.save(Image.builder()
+                .record(savedLog)
                 .imageUrl(vehicleImgUrl)
                 .imageType("vehicle")
                 .imageTitle(vehicleImgTitle).build());
 
-        ImageEntity plateImg = imgRepo.save(ImageEntity.builder()
-                .logEntity(savedLog)
+        Image plateImg = imgRepo.save(Image.builder()
+                .record(savedLog)
                 .imageUrl(plateImgUrl)
                 .imageType("plate")
                 .imageTitle(plateImgTitle).build());
@@ -154,9 +156,9 @@ public class LogService {
         // PredictLog 엔티티 저장
         for (int i = 0; i < predList.size(); i++) {
             PredictDto dto = predList.get(i);
-            dto.setLogId(savedLog.getLogId());
-            PredictLogEntity predEntity = predRepo.save(PredictLogEntity.builder()
-                    .logEntity(savedLog)
+            dto.setLogId(savedLog.getRecordId());
+            predRepo.save(PredictPlate.builder()
+                    .record(savedLog)
                     .modelType(dto.getModelType())
                     .isPresent(dto.isPresent())
                     .accuracy(dto.getAccuracy())
@@ -165,11 +167,10 @@ public class LogService {
 
         // logDto 구성
         LogDto dto = LogDto.builder()
-                .logId(savedLog.getLogId())
+                .recordId(savedLog.getRecordId())
                 .vehicleImage(vehicleImg.getImageUrl())
                 .plateImage(plateImg.getImageUrl())
                 .state(savedLog.getState())
-                .date(savedLog.getDate())
                 .modelType(savedLog.getModelType())
                 .licensePlate(savedLog.getLicensePlate())
                 .accuracy(savedLog.getAccuracy() == 0.0 ? "-" : String.valueOf(savedLog.getAccuracy()))
@@ -178,17 +179,17 @@ public class LogService {
         dtos[0] = dto;
         dtos[1] = predList;
         dtos[2] = ImageDto.builder()
-                .logId(savedLog.getLogId())
+                .recordId(savedLog.getRecordId())
                 .imageType("plate")
                 .imageUrl(plateImgUrl).build();
         return response.success(dtos);
     }
 
     // LogEntity & ImageEntity -> LogDto
-    private List<LogDto> createLogDto(List<LogEntity> logEntities) {
+    private List<LogDto> createLogDto(List<Record> logEntities) {
         List<LogDto> list = new ArrayList<>();
-        for (LogEntity logEntity : logEntities) {
-            List<ImageEntity> imgEntities = imgRepo.findByLogId(logEntity.getLogId());
+        for (Record record : logEntities) {
+            List<Image> imgEntities = imgRepo.findByRecord(record);
             String vehicleImg;
             String plateImg;
             if (imgEntities.size() == 2) {
@@ -202,14 +203,13 @@ public class LogService {
                 plateImg = "https://licenseplate-iru.s3.ap-northeast-2.amazonaws.com/sample/3441e8bb-f992-4879-8360-c2c70488902e.jpg";
             }
             list.add(LogDto.builder()
-                    .logId(logEntity.getLogId())
-                    .modelType(logEntity.getModelType())
+                    .recordId(record.getRecordId())
+                    .modelType(record.getModelType())
                     .vehicleImage(vehicleImg)
                     .plateImage(plateImg)
-                    .state(logEntity.getState())
-                    .date(logEntity.getDate())
-                    .licensePlate(logEntity.getLicensePlate())
-                    .accuracy(logEntity.getAccuracy() == 0.0 ? "-" : String.valueOf(logEntity.getAccuracy()))
+                    .state(record.getState())
+                    .licensePlate(record.getLicensePlate())
+                    .accuracy(record.getAccuracy() == 0.0 ? "-" : String.valueOf(record.getAccuracy()))
                     .build());
         }
         return list;
@@ -225,7 +225,7 @@ public class LogService {
         System.out.printf("%s ~ %s", startDate, endDate);
 
         // 로그 조회
-        List<LogEntity> logEntities = logRepo.findByDate(startDate, endDate);
+        List<Record> logEntities = recordRepo.findByCreateDateBetween(startDate, endDate);
         System.out.println("logEntities : " + logEntities);
 
         // LogEntity -> LogDto 변환
@@ -238,7 +238,7 @@ public class LogService {
     public ResponseEntity<?> searchPlate(String plate) {
 
         // 로그 조회
-        List<LogEntity> logEntities = logRepo.findByPlate(plate);
+        List<Record> logEntities = recordRepo.findByLicensePlate(plate);
 
         // LogEntity -> LogDto 변환
         List<LogDto> list = createLogDto(logEntities);
@@ -248,17 +248,16 @@ public class LogService {
 
     // 6. 수정/삭제 기록 조회
     public ResponseEntity<?> getHistory() {
-        List<HistoryEntity> entities = histRepo.findAll();
+        List<History> entities = histRepo.findAll();
         List<HistoryDto> list = new ArrayList<>();
-        for (HistoryEntity entity : entities) {
+        for (History entity : entities) {
             list.add(HistoryDto.builder()
                     .id(entity.getId())
-                    .logId(entity.getLogId())
-                    .userId(entity.getUserId())
-                    .workType(entity.getWorkType())
+                    .recordId(entity.getRecordId())
+                    .memberId(entity.getMemberId())
+                    .workType(entity.getTaskType())
                     .currentText(entity.getCurrentText())
                     .previousText(entity.getPreviousText())
-                    .date(entity.getDate())
                     .build());
         }
         return response.success(list);
@@ -266,36 +265,34 @@ public class LogService {
 
     // 7. 로그 수정(admin)
     public ResponseEntity<?> updateLog(ArrayList<LogDto> list) throws IOException {
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        String memberId = SecurityContextHolder.getContext().getAuthentication().getName();
         for (LogDto dto : list) {
-            Optional<LogEntity> optionalLog = logRepo.findById(dto.getLogId());
+            Optional<Record> optionalLog = recordRepo.findById(dto.getRecordId());
             if (!optionalLog.isPresent()) {
                 return response.fail("존재하지 않는 기록입니다.", HttpStatus.BAD_REQUEST);
             }
 
-            LogEntity entity = optionalLog.get();
+            Record record = optionalLog.get();
 
             // history 기록
-            histRepo.save(HistoryEntity.builder()
-                    .logId(dto.getLogId())
-                    .previousText(entity.getLicensePlate())
+            histRepo.save(History.builder()
+                    .recordId(record.getRecordId())
+                    .previousText(record.getLicensePlate())
                     .currentText(dto.getLicensePlate())
-                    .workType("update")
-                    .userId(userId).build());
+                    .taskType("update")
+                    .memberId(memberId).build());
 
             // 수정된 log 기록
-            entity.setLicensePlate(dto.getLicensePlate());
-            entity.setState("수정 완료");
+            record.updateLicensePlate(dto.getLicensePlate(), "수정 완료");
 
-            logRepo.save(entity);
+            recordRepo.save(record);
 
-            dto.setState("수정 완료");
             // AWS S3 파일 이동
             try {
-                List<ImageEntity> imgEntities = imgRepo.findByLogId(entity.getLogId());
+                List<Image> imgEntities = imgRepo.findByRecord(record);
 
-                for (ImageEntity imageEntity : imgEntities) {
-                    String answer = entity.getLicensePlate();
+                for (Image imageEntity : imgEntities) {
+                    String answer = record.getLicensePlate();
                     String imageTitle = imageEntity.getImageTitle();
                     String imageType = imageEntity.getImageType();
 
@@ -304,8 +301,7 @@ public class LogService {
                     // AWS S3 파일 삭제
                     fileService.deleteFile(imageTitle, imageType);
 
-                    imageEntity.setImageUrl(map.get("url"));
-                    imageEntity.setImageTitle(map.get("title"));
+                    imageEntity.updateImage(map.get("title"), map.get("url"));
                     imgRepo.save(imageEntity);
                 }
 
@@ -321,30 +317,29 @@ public class LogService {
 
     // 8. 로그 삭제(admin)
     public ResponseEntity<?> deleteLog(ArrayList<LogDto> list) {
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        String memberId = SecurityContextHolder.getContext().getAuthentication().getName();
         try {
             for (LogDto dto : list) {
-                int logId = dto.getLogId();
-                System.out.println("logId : " + logId);
+                int recordId = dto.getRecordId();
 
                 // AWS S3 파일 삭제
-                List<ImageEntity> imgEntities = imgRepo.findByLogId(logId);
-                for (ImageEntity imgEntity : imgEntities) {
+                List<Image> imgEntities = imgRepo.findByRecord(recordRepo.findByRecordId(recordId).get());
+                for (Image imgEntity : imgEntities) {
                     String imageTitle = imgEntity.getImageTitle();
                     String imageType = imgEntity.getImageType();
                     fileService.deleteFile(imageTitle, imageType);
                 }
 
                 // log 삭제
-                logRepo.deleteById(logId);
+                recordRepo.deleteById(recordId);
 
                 // history 기록
-                histRepo.save(HistoryEntity.builder()
-                        .logId(dto.getLogId())
+                histRepo.save(History.builder()
+                        .recordId(dto.getRecordId())
                         .previousText("delete")
                         .currentText("delete")
-                        .workType("delete")
-                        .userId(userId).build());
+                        .taskType("delete")
+                        .memberId(memberId).build());
             }
             return response.success();
         } catch (Exception e) {

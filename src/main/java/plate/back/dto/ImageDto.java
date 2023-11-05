@@ -8,7 +8,7 @@ import lombok.Getter;
 @Builder
 @AllArgsConstructor
 public class ImageDto {
-    private Integer logId;
+    private Integer recordId;
     private String imageUrl;
     private String imageType;
 }

@@ -6,32 +6,26 @@ import org.hibernate.annotations.OnDeleteAction;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
-@Table(name = "image")
-public class ImageEntity {
+public class Image {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(optional = false, cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "log_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false, cascade = CascadeType.REMOVE)
+    @JoinColumn(name = "record_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private LogEntity logEntity;
+    private Record record;
 
     @Column(nullable = false, length = 10)
     private String imageType;
@@ -42,11 +36,16 @@ public class ImageEntity {
     @Column(nullable = false)
     private String imageUrl;
 
-    public void setImageUrl(String url) {
-        this.imageUrl = url;
+    @Builder
+    public Image(Record record, String imageType, String imageTitle, String imageUrl) {
+        this.record = record;
+        this.imageType = imageType;
+        this.imageTitle = imageTitle;
+        this.imageUrl = imageUrl;
     }
 
-    public void setImageTitle(String title) {
-        this.imageTitle = title;
+    public void updateImage(String imageTitle, String imageUrl) {
+        this.imageTitle = imageTitle;
+        this.imageUrl = imageUrl;
     }
 }

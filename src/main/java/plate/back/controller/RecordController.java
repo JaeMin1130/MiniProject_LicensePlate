@@ -19,45 +19,32 @@ import org.springframework.web.multipart.MultipartFile;
 import lombok.RequiredArgsConstructor;
 import plate.back.dto.LogDto;
 import plate.back.dto.ResponseDto;
-import plate.back.lib.Helper;
-import plate.back.service.LogService;
+import plate.back.service.RecordService;
+import plate.back.utils.Helper;
 
 @RequiredArgsConstructor
-@RequestMapping("/main")
+@RequestMapping("/api/records")
 @RestController
-public class LogController {
+public class RecordController {
 
-    private final LogService logService;
+    private final RecordService logService;
     private final ResponseDto response;
 
     // 3. 차량 출입 로그 기록
-    @PostMapping("/record")
-    public ResponseEntity<?> recordLog(MultipartFile file)
-            throws IOException {
-        // validation check
-        // if (errors.hasErrors()) {
-        // return response.invalidFields(Helper.refineErrors(errors));
-        // }
+    @PostMapping
+    public ResponseEntity<?> recordLog(MultipartFile file) throws IOException {
         return logService.recordLog(file);
     }
 
     // 4. 날짜별 로그 조회 yy-MM-dd
-    @GetMapping("/search/date/{start}/{end}")
-    public ResponseEntity<?> searchDate(@PathVariable String start, @PathVariable String end)
-            throws ParseException {
-        // validation check
-        // if (errors.hasErrors()) {
-        // return response.invalidFields(Helper.refineErrors(errors));
-        // }
+    @GetMapping("/date/{start}/{end}")
+    public ResponseEntity<?> searchDate(@PathVariable String start, @PathVariable String end) throws ParseException {
         return logService.searchDate(start, end);
     }
 
     // 5. 차량 번호별 로그 조회
-    @GetMapping("/search/plate/{plate}")
+    @GetMapping("/plate/{plate}")
     public ResponseEntity<?> searchPlate(@PathVariable String plate) {
-        // if (errors.hasErrors()) {
-        // return response.invalidFields(Helper.refineErrors(errors));
-        // }
         return logService.searchPlate(plate);
     }
 
@@ -68,9 +55,8 @@ public class LogController {
     }
 
     // 7. 로그 수정(admin)
-    @PutMapping("/update")
-    public ResponseEntity<?> updateLog(@RequestBody ArrayList<LogDto> list, Errors errors)
-            throws IOException {
+    @PutMapping
+    public ResponseEntity<?> updateLog(@RequestBody ArrayList<LogDto> list, Errors errors) throws IOException {
         if (errors.hasErrors()) {
             return response.invalidFields(Helper.refineErrors(errors));
         }
@@ -78,7 +64,7 @@ public class LogController {
     }
 
     // 8. 로그 삭제(admin)
-    @DeleteMapping("/delete")
+    @DeleteMapping
     public ResponseEntity<?> deleteLog(@RequestBody ArrayList<LogDto> list, Errors errors) {
         if (errors.hasErrors()) {
             return response.invalidFields(Helper.refineErrors(errors));

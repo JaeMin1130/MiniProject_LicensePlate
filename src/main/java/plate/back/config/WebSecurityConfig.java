@@ -12,8 +12,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
+import plate.back.exception.handler.JwtExceptionHandler;
 import plate.back.jwt.JwtAuthorizationFilter;
-import plate.back.jwt.JwtExceptionHandler;
 import plate.back.jwt.JwtTokenProvider;
 
 @Configuration
@@ -28,12 +28,14 @@ public class WebSecurityConfig {
         http.csrf(csrf -> csrf.disable()).httpBasic(httpbasic -> httpbasic.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers(HttpMethod.OPTIONS, "/main/**").permitAll()
-                            .requestMatchers("/user/signin").permitAll()
-                            .requestMatchers("/user/signup").permitAll()
-                            .requestMatchers("main/search/plate/**", "main/search/date/**", "/main/record")
-                            .hasAnyRole("ADMIN", "USER")
-                            .requestMatchers("/main/update", "/main/delete", "main/history").hasRole("ADMIN")
+                    auth.requestMatchers(HttpMethod.OPTIONS, "/api/records/**").permitAll()
+                            .requestMatchers("/api/members/sign-in").permitAll()
+                            .requestMatchers("/api/members/sign-up").permitAll()
+                            .requestMatchers("/api/records/plate/**", "/api/records/date/**", "/api/records")
+                            .hasAnyRole("ADMIN", "MEMBER")
+                            .requestMatchers("/api/records/history").hasRole("ADMIN")
+                            .requestMatchers(HttpMethod.DELETE).hasRole("ADMIN")
+                            .requestMatchers(HttpMethod.PUT).hasRole("ADMIN")
                             .anyRequest().authenticated();
                     // auth.requestMatchers("/**").permitAll();
                 })
