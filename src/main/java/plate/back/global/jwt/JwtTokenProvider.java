@@ -38,15 +38,17 @@ public class JwtTokenProvider {
     }
 
     // 유저 정보를 가지고 AccessToken, RefreshToken 을 생성하는 메서드
-    public MemberResponseDto.TokenInfo generateToken(Authentication authentication) {
+    public String generateToken(Authentication authentication) {
         // 권한 가져오기
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
 
         long now = (new Date()).getTime();
+
         // Access Token 생성
         Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
+
         String accessToken = Jwts.builder()
                 .setSubject(authentication.getName())
                 .claim(AUTHORITIES_KEY, authorities)
@@ -54,10 +56,7 @@ public class JwtTokenProvider {
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
-        return MemberResponseDto.TokenInfo.builder()
-                .accessToken(BEARER_TYPE + accessToken)
-                .role(authorities)
-                .build();
+        return BEARER_TYPE + accessToken;
     }
 
     // 토큰 정보를 검증하는 메서드

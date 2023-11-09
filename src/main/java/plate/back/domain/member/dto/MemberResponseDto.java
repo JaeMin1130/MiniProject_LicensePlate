@@ -1,16 +1,17 @@
 package plate.back.domain.member.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
+@Builder
+@Getter
 public class MemberResponseDto {
 
-    @Builder
-    @Getter
-    @AllArgsConstructor
-    public static class TokenInfo {
-        private String accessToken;
-        private String role;
+    private String accessToken;
+
+    public static MemberResponseDto of(String accessToken) {
+        return MemberResponseDto.builder()
+                .accessToken(accessToken)
+                .build();
     }
 }

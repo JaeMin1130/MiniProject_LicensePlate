@@ -1,4 +1,4 @@
-package plate.back.global.exception;
+package plate.back.global.response;
 
 import lombok.Builder;
 import lombok.Getter;

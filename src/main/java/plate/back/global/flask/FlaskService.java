@@ -7,7 +7,6 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -17,7 +16,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
-import plate.back.global.response.ResponseDto;
 import plate.back.global.utils.RateLimiter;
 
 @RequiredArgsConstructor
@@ -29,13 +27,11 @@ public class FlaskService {
 
     private final RateLimiter rateLimiter;
 
-    private final ResponseDto response;
-
     public ResponseEntity<?> callApi(MultipartFile file) throws IOException {
         // Check if the request is allowed by the rate limiter
         if (!rateLimiter.allowRequest()) {
             System.out.println("Too many requests");
-            return response.fail(HttpStatus.TOO_MANY_REQUESTS);
+            // return response.fail(HttpStatus.TOO_MANY_REQUESTS);
         }
 
         HttpHeaders headers = new HttpHeaders();

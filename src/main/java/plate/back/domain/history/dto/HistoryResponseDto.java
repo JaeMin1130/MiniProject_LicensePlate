@@ -1,6 +1,6 @@
 package plate.back.domain.history.dto;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,12 +11,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class HistoryDto {
+public class HistoryResponseDto {
     private Integer id;
     private Integer recordId;
     private String memberId;
     private String workType;
     private String previousText;
     private String currentText;
-    private Date date;
+    private LocalDateTime createdDate;
 }
