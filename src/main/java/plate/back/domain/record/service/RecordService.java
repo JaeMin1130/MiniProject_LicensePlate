@@ -10,32 +10,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.amazonaws.services.s3.model.AmazonS3Exception;
-
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import plate.back.domain.car.repository.CarInfoRepository;
-import plate.back.domain.history.dto.HistoryDto;
+import plate.back.domain.history.dto.HistoryResponseDto;
 import plate.back.domain.history.entity.History;
 import plate.back.domain.history.repository.HistoryRepository;
-import plate.back.domain.image.dto.ImageDto;
+import plate.back.domain.image.dto.ImageResponseDto;
 import plate.back.domain.image.entity.Image;
 import plate.back.domain.image.repository.ImageRepository;
 import plate.back.domain.predictedPlate.dto.PredictedPlateDto;
 import plate.back.domain.predictedPlate.entity.PredictedPlate;
 import plate.back.domain.predictedPlate.repository.PredictedPlateRepository;
-import plate.back.domain.record.dto.RecordDto;
+import plate.back.domain.record.dto.CombinationResponseDto;
+import plate.back.domain.record.dto.RecordResponseDto;
 import plate.back.domain.record.entity.Record;
 import plate.back.domain.record.repository.RecordRepository;
 import plate.back.global.aws.s3.service.FileService;
 import plate.back.global.flask.FlaskService;
-import plate.back.global.response.ResponseDto;
 
 @Transactional
 @RequiredArgsConstructor
@@ -48,20 +44,13 @@ public class RecordService {
     private final HistoryRepository histRepo;
     private final FileService fileService;
     private final FlaskService flaskService;
-    private final ResponseDto response;
 
-    // 3. 차량 출입 로그 기록
-    public ResponseEntity<?> recordLog(MultipartFile file) throws IOException {
-        Object[] dtos = new Object[3];
+    // 3. 차량 출입 기록 기록
+    public CombinationResponseDto recordLog(MultipartFile file) throws IOException {
+
         // flask api 호출
         LinkedHashMap<String, Object> flaskResponse;
-        try {
-            flaskResponse = (LinkedHashMap<String, Object>) flaskService.callApi(file).getBody();
-        } catch (java.lang.ClassCastException caseException) {
-            return response.fail("Too many requests. Please try again later.", HttpStatus.TOO_MANY_REQUESTS);
-        } catch (Exception e) {
-            return response.fail(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        flaskResponse = (LinkedHashMap<String, Object>) flaskService.callApi(file).getBody();
 
         // 번호판 인식 실패
         if ((int) flaskResponse.get("status") == 500) {
@@ -82,7 +71,7 @@ public class RecordService {
                     .imageType("vehicle")
                     .imageTitle(vehicleImgTitle).build());
 
-            RecordDto dto = RecordDto.builder()
+            RecordResponseDto dto = RecordResponseDto.builder()
                     .recordId(savedLog.getRecordId())
                     .vehicleImage(vehicleImg.getImageUrl())
                     .plateImage("인식 실패")
@@ -91,8 +80,8 @@ public class RecordService {
                     .licensePlate("인식 실패")
                     .accuracy("인식 실패")
                     .build();
-            dtos[0] = dto;
-            return response.fail(dtos, (String) flaskResponse.get("error"), HttpStatus.INTERNAL_SERVER_ERROR);
+
+            return CombinationResponseDto.of(dto, null, null);
         }
 
         LinkedHashMap<String, ArrayList<Object>> predictValue = (LinkedHashMap<String, ArrayList<Object>>) flaskResponse
@@ -128,7 +117,7 @@ public class RecordService {
         }
 
         // Log 엔티티 저장
-        Record savedLog = recordRepo.save(Record.builder()
+        Record savedRecord = recordRepo.save(Record.builder()
                 .modelType(predList.get(idx).getModelType())
                 .licensePlate(predList.get(idx).getPredictedText())
                 .accuracy(maxVal)
@@ -144,52 +133,47 @@ public class RecordService {
         String plateImgTitle = String.valueOf(flaskResponse.get("plateImgTitle"));
 
         Image vehicleImg = imgRepo.save(Image.builder()
-                .record(savedLog)
+                .record(savedRecord)
                 .imageUrl(vehicleImgUrl)
                 .imageType("vehicle")
                 .imageTitle(vehicleImgTitle).build());
 
         Image plateImg = imgRepo.save(Image.builder()
-                .record(savedLog)
+                .record(savedRecord)
                 .imageUrl(plateImgUrl)
                 .imageType("plate")
                 .imageTitle(plateImgTitle).build());
 
-        // PredictLog 엔티티 저장
+        // PredictedPlate 엔티티 저장
         for (int i = 0; i < predList.size(); i++) {
             PredictedPlateDto dto = predList.get(i);
-            dto.setLogId(savedLog.getRecordId());
+            dto.setLogId(savedRecord.getRecordId());
             predRepo.save(PredictedPlate.builder()
-                    .record(savedLog)
+                    .record(savedRecord)
                     .modelType(dto.getModelType())
                     .isPresent(dto.isPresent())
                     .accuracy(dto.getAccuracy())
                     .predictedText(dto.getPredictedText()).build());
         }
 
-        // logDto 구성
-        RecordDto dto = RecordDto.builder()
-                .recordId(savedLog.getRecordId())
+        // RecordResponseDto 구성
+        RecordResponseDto dto = RecordResponseDto.builder()
+                .recordId(savedRecord.getRecordId())
                 .vehicleImage(vehicleImg.getImageUrl())
                 .plateImage(plateImg.getImageUrl())
-                .state(savedLog.getState())
-                .modelType(savedLog.getModelType())
-                .licensePlate(savedLog.getLicensePlate())
-                .accuracy(savedLog.getAccuracy() == 0.0 ? "-" : String.valueOf(savedLog.getAccuracy()))
+                .state(savedRecord.getState())
+                .modelType(savedRecord.getModelType())
+                .licensePlate(savedRecord.getLicensePlate())
+                .accuracy(savedRecord.getAccuracy() == 0.0 ? "-" : String.valueOf(savedRecord.getAccuracy()))
                 .build();
 
-        dtos[0] = dto;
-        dtos[1] = predList;
-        dtos[2] = ImageDto.builder()
-                .recordId(savedLog.getRecordId())
-                .imageType("plate")
-                .imageUrl(plateImgUrl).build();
-        return response.success(dtos);
+        ImageResponseDto plateImage = ImageResponseDto.of(savedRecord.getRecordId(), plateImgUrl, "plate");
+        return CombinationResponseDto.of(dto, predList, plateImage);
     }
 
-    // LogEntity & ImageEntity -> LogDto
-    private List<RecordDto> createLogDto(List<Record> logEntities) {
-        List<RecordDto> list = new ArrayList<>();
+    // Record & Image -> RecordResponseDto
+    private List<RecordResponseDto> createRecordResponseDtos(List<Record> logEntities) {
+        List<RecordResponseDto> list = new ArrayList<>();
         for (Record record : logEntities) {
             List<Image> imgEntities = imgRepo.findByRecord(record);
             String vehicleImg;
@@ -204,7 +188,7 @@ public class RecordService {
                 vehicleImg = "https://licenseplate-iru.s3.ap-northeast-2.amazonaws.com/sample/img10.jpg";
                 plateImg = "https://licenseplate-iru.s3.ap-northeast-2.amazonaws.com/sample/3441e8bb-f992-4879-8360-c2c70488902e.jpg";
             }
-            list.add(RecordDto.builder()
+            list.add(RecordResponseDto.builder()
                     .recordId(record.getRecordId())
                     .modelType(record.getModelType())
                     .vehicleImage(vehicleImg)
@@ -217,8 +201,8 @@ public class RecordService {
         return list;
     }
 
-    // 4. 날짜별 로그 조회 yy-MM-dd
-    public ResponseEntity<?> searchDate(String start, String end) throws ParseException {
+    // 4. 날짜별 기록 조회 yy-MM-dd
+    public List<RecordResponseDto> searchDate(String start, String end) throws ParseException {
 
         // String -> Date 변환
         SimpleDateFormat dateFormat = new SimpleDateFormat("yy-MM-dd");
@@ -226,53 +210,54 @@ public class RecordService {
         Date endDate = dateFormat.parse(end);
         System.out.printf("%s ~ %s", startDate, endDate);
 
-        // 로그 조회
+        // 기록 조회
         List<Record> logEntities = recordRepo.findByCreateDateBetween(startDate, endDate);
         System.out.println("logEntities : " + logEntities);
 
         // LogEntity -> LogDto 변환
-        List<RecordDto> list = createLogDto(logEntities);
+        List<RecordResponseDto> list = createRecordResponseDtos(logEntities);
 
-        return response.success(list);
+        return list;
     }
 
-    // 5. 차량 번호별 로그 조회
-    public ResponseEntity<?> searchPlate(String plate) {
+    // 5. 차량 번호별 기록 조회
+    public List<RecordResponseDto> searchPlate(String plate) {
 
-        // 로그 조회
+        // 기록 조회
         List<Record> logEntities = recordRepo.findByLicensePlate(plate);
 
         // LogEntity -> LogDto 변환
-        List<RecordDto> list = createLogDto(logEntities);
+        List<RecordResponseDto> list = createRecordResponseDtos(logEntities);
 
-        return response.success(list);
+        return list;
     }
 
     // 6. 수정/삭제 기록 조회
-    public ResponseEntity<?> getHistory() {
+    public List<HistoryResponseDto> getHistory() {
         List<History> entities = histRepo.findAll();
-        List<HistoryDto> list = new ArrayList<>();
+        List<HistoryResponseDto> list = new ArrayList<>();
         for (History entity : entities) {
-            list.add(HistoryDto.builder()
+            list.add(HistoryResponseDto.builder()
                     .id(entity.getId())
                     .recordId(entity.getRecordId())
                     .memberId(entity.getMemberId())
                     .workType(entity.getTaskType())
                     .currentText(entity.getCurrentText())
                     .previousText(entity.getPreviousText())
+                    .createdDate(entity.getCreatedDate())
                     .build());
         }
-        return response.success(list);
+        return list;
     }
 
-    // 7. 로그 수정(admin)
-    public ResponseEntity<?> updateLog(ArrayList<RecordDto> list) throws IOException {
+    // 7. 기록 수정(admin)
+    public void updateLog(ArrayList<RecordResponseDto> list) throws IOException {
         String memberId = SecurityContextHolder.getContext().getAuthentication().getName();
-        for (RecordDto dto : list) {
+        for (RecordResponseDto dto : list) {
             Optional<Record> optionalLog = recordRepo.findById(dto.getRecordId());
-            if (!optionalLog.isPresent()) {
-                return response.fail("존재하지 않는 기록입니다.", HttpStatus.BAD_REQUEST);
-            }
+            // if (!optionalLog.isPresent()) {
+            // return response.fail("존재하지 않는 기록입니다.", HttpStatus.BAD_REQUEST);
+            // }
 
             Record record = optionalLog.get();
 
@@ -307,21 +292,20 @@ public class RecordService {
                     imgRepo.save(imageEntity);
                 }
 
-            } catch (AmazonS3Exception s3Exception) {
-                continue;
+                // } catch (AmazonS3Exception s3Exception) {
+                // continue;
             } catch (Exception e) {
                 e.printStackTrace();
-                return response.fail(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
+                // return response.fail(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
             }
         }
-        return response.success();
     }
 
-    // 8. 로그 삭제(admin)
-    public ResponseEntity<?> deleteLog(ArrayList<RecordDto> list) {
+    // 8. 기록 삭제(admin)
+    public void deleteLog(ArrayList<RecordResponseDto> list) {
         String memberId = SecurityContextHolder.getContext().getAuthentication().getName();
         try {
-            for (RecordDto dto : list) {
+            for (RecordResponseDto dto : list) {
                 int recordId = dto.getRecordId();
 
                 // AWS S3 파일 삭제
@@ -343,10 +327,8 @@ public class RecordService {
                         .taskType("delete")
                         .memberId(memberId).build());
             }
-            return response.success();
         } catch (Exception e) {
             e.printStackTrace();
-            return response.fail("삭제 실패", HttpStatus.BAD_REQUEST);
         }
     }
 }
