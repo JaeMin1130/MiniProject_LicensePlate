@@ -7,10 +7,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import plate.back.entity.Record;
-import plate.back.persistence.CarInfoRepository;
-import plate.back.persistence.RecordRepository;
-import plate.back.persistence.PredictLogRepository;
+import plate.back.domain.car.repository.CarInfoRepository;
+import plate.back.domain.predictedPlate.repository.PredictedPlateRepository;
+import plate.back.domain.record.entity.Record;
+import plate.back.domain.record.repository.RecordRepository;
 
 @SpringBootTest
 class BackApplicationTests {
@@ -20,7 +20,7 @@ class BackApplicationTests {
     @Autowired
     RecordRepository logRepo;
     @Autowired
-    PredictLogRepository predRepo;
+    PredictedPlateRepository predRepo;
 
     @Test
     void contextLoads() {
