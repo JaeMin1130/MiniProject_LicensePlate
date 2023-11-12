@@ -7,7 +7,7 @@ import numpy as np
 from PIL import Image
 
 # 파일 경로 설정
-SAVED_MODEL_PATH = "https://tfhub.dev/captain-pool/esrgan-tf2/1"
+SAVED_MODEL_PATH = "https://kaggle.com/models/kaggle/esrgan-tf2/frameworks/TensorFlow2/variations/esrgan-tf2/versions/1"
 
 # ESRGAN 모델 불러오기
 model = hub.load(SAVED_MODEL_PATH)

@@ -26,9 +26,9 @@ def model_result(image_path):
 
     if selected_text:
         print(f'Class: {selected_text}, Confidence: {max_confidence:.2f}')
-        return [selected_text[-4:], max_confidence*100]
+        return ["ocr", selected_text[-4:], max_confidence*100]
     else:
-        return (print("None"))
+        return ["ocr", "예측 실패", 0]
 
 if __name__ == "__main__":
     model_result()

@@ -45,7 +45,7 @@ file_name = str(uuid.uuid4()) + ".jpg"
 # 이미지 흑백 변경후 이미지
 after_path = f"./super_resolution/{file_name}"
 
-@app.route("/main/record", methods=["POST"])
+@app.route("/api/records", methods=["POST"])
 def predict():
     if request.method == "POST":
         if "file" not in request.files:
@@ -112,9 +112,7 @@ def predict():
 
         return jsonify({
             "status" : 200,
-            "predictedResults":{"yolo": yolo_result,
-                                "ocr": ocr_result,
-                                "robo": robo_result},
+            "predictedResults":[yolo_result, ocr_result, robo_result],
             "plateImgUrl": img_url,
             "plateImgTitle": img_title
         })    

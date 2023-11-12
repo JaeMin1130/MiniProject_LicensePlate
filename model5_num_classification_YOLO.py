@@ -51,6 +51,7 @@ def YOLOv5(file_path, model):
     # TensorFlow Tensor을 Python 데이터 타입으로 변환
     python_value = float(tensor.numpy())*100
     # 반환값 저장
+    return_total.append("yolo")
     return_total.append(str(num))
     return_total.append(python_value)
     #return return_classes[-4:], avg
