@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -12,12 +11,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import plate.back.global.flask.dto.FlaskResponseDto;
 import plate.back.global.utils.RateLimiter;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class FlaskService {
@@ -26,11 +29,12 @@ public class FlaskService {
     private String flaskApiUrl;
 
     private final RateLimiter rateLimiter;
+    private final WebClient webClient = WebClient.builder().baseUrl("http://1.252.90.210:5000").build();
 
-    public ResponseEntity<?> callApi(MultipartFile file) throws IOException {
+    public ResponseEntity<FlaskResponseDto> callApi(MultipartFile file) throws IOException {
         // Check if the request is allowed by the rate limiter
         if (!rateLimiter.allowRequest()) {
-            System.out.println("Too many requests");
+            log.error("Too many requests");
             // return response.fail(HttpStatus.TOO_MANY_REQUESTS);
         }
 
@@ -45,17 +49,16 @@ public class FlaskService {
             }
         });
 
-        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-
-        System.out.println("Flask Connection Starts");
-        RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<Object> response = restTemplate.exchange(
-                flaskApiUrl + "/main/record", // Use the configured API URL
-                HttpMethod.POST,
-                requestEntity,
-                Object.class);
-        System.out.println("Response : " + response);
-        System.out.println("Flask Connection Success");
+        log.info("Flask Connection Starts");
+        ResponseEntity<FlaskResponseDto> response = webClient.post()
+                .uri("/api/records")
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .body(BodyInserters.fromMultipartData(body))
+                .retrieve()
+                .toEntity(FlaskResponseDto.class)
+                .block(); // block until the response is available
+        log.info("Response : " + response);
+        log.info("Flask Connection Success");
         return response;
     }
 }

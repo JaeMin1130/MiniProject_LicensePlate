@@ -28,17 +28,18 @@ public class WebSecurityConfig {
         http.csrf(csrf -> csrf.disable()).httpBasic(httpbasic -> httpbasic.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers(HttpMethod.OPTIONS, "/api/records/**").permitAll()
-                            .requestMatchers("/api/members/sign-in").permitAll()
-                            .requestMatchers("/api/members/sign-up").permitAll()
-                            .requestMatchers("/test/webhook/**").permitAll()
-                            .requestMatchers("/api/records/plate/**", "/api/records/date/**", "/api/records")
-                            .hasAnyRole("ADMIN", "MEMBER")
-                            .requestMatchers("/api/records/history").hasRole("ADMIN")
-                            .requestMatchers(HttpMethod.DELETE).hasRole("ADMIN")
-                            .requestMatchers(HttpMethod.PUT).hasRole("ADMIN")
-                            .anyRequest().authenticated();
-                    // auth.requestMatchers("/**").permitAll();
+                    // auth.requestMatchers(HttpMethod.OPTIONS, "/api/records/**").permitAll()
+                    // .requestMatchers("/api/members/sign-in").permitAll()
+                    // .requestMatchers("/api/members/sign-up").permitAll()
+                    // .requestMatchers("/test/webhook/**").permitAll()
+                    // .requestMatchers("/api/records/plate/**", "/api/records/date/**",
+                    // "/api/records")
+                    // .hasAnyRole("ADMIN", "MEMBER")
+                    // .requestMatchers("/api/records/history").hasRole("ADMIN")
+                    // .requestMatchers(HttpMethod.DELETE).hasRole("ADMIN")
+                    // .requestMatchers(HttpMethod.PUT).hasRole("ADMIN")
+                    // .anyRequest().authenticated();
+                    auth.requestMatchers("/**").permitAll();
                 })
                 .addFilterBefore(new JwtAuthorizationFilter(jwtTokenProvider, exceptionHandler),
                         UsernamePasswordAuthenticationFilter.class);

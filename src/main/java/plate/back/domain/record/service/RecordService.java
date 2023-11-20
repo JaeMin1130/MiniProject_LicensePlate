@@ -5,7 +5,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -26,12 +25,14 @@ import plate.back.domain.image.repository.ImageRepository;
 import plate.back.domain.predictedPlate.dto.PredictedPlateDto;
 import plate.back.domain.predictedPlate.entity.PredictedPlate;
 import plate.back.domain.predictedPlate.repository.PredictedPlateRepository;
-import plate.back.domain.record.dto.CombinationResponseDto;
+import plate.back.domain.record.dto.MultiResponseDto;
 import plate.back.domain.record.dto.RecordResponseDto;
 import plate.back.domain.record.entity.Record;
 import plate.back.domain.record.repository.RecordRepository;
-import plate.back.global.aws.s3.service.FileService;
 import plate.back.global.flask.FlaskService;
+import plate.back.global.flask.dto.FlaskResponseDto;
+import plate.back.global.flask.dto.ModelPredictResult;
+import plate.back.global.s3.service.FileService;
 
 @Transactional
 @RequiredArgsConstructor
@@ -46,14 +47,15 @@ public class RecordService {
     private final FlaskService flaskService;
 
     // 3. 차량 출입 기록 기록
-    public CombinationResponseDto recordLog(MultipartFile file) throws IOException {
+    public MultiResponseDto recordLog(MultipartFile file) throws IOException {
 
         // flask api 호출
-        LinkedHashMap<String, Object> flaskResponse;
-        flaskResponse = (LinkedHashMap<String, Object>) flaskService.callApi(file).getBody();
+        FlaskResponseDto flaskResponseDto = flaskService.callApi(file).getBody();
 
         // 번호판 인식 실패
-        if ((int) flaskResponse.get("status") == 500) {
+        if (flaskResponseDto.getStatus() == 500) {
+            System.out.println(flaskResponseDto.toString());
+
             Record savedLog = recordRepo.save(Record.builder()
                     .modelType("인식 실패")
                     .licensePlate("인식 실패")
@@ -81,56 +83,51 @@ public class RecordService {
                     .accuracy("인식 실패")
                     .build();
 
-            return CombinationResponseDto.of(dto, null, null);
+            return MultiResponseDto.of(dto, null, null);
         }
 
-        LinkedHashMap<String, ArrayList<Object>> predictValue = (LinkedHashMap<String, ArrayList<Object>>) flaskResponse
-                .get("predictedResults");
+        List<ModelPredictResult> modelPredictResults = flaskResponseDto.getPredictedResults();
 
-        ArrayList<PredictedPlateDto> predList = new ArrayList<>();
-        for (String key : predictValue.keySet()) {
-            List<Object> list = predictValue.get(key);
-            if (list == null) {
-                predList.add(new PredictedPlateDto(key, "예측 실패", 0));
-            } else {
-                predList.add(new PredictedPlateDto(key, String.valueOf(list.get(0)), (double) list.get(1)));
+        List<PredictedPlateDto> predRespDto = new ArrayList<>();
+
+        for (ModelPredictResult predictedResult : modelPredictResults) {
+            predRespDto.add(PredictedPlateDto.convertIntoDto(predictedResult));
+        }
+
+        int numOfPresentPlate = 0;
+        for (PredictedPlateDto predictedPlateDto : predRespDto) {
+            if (carRepo.findByLicensePlate(predictedPlateDto.getModelPredictResult().getPredictedText()).isPresent()) {
+                predictedPlateDto.setIsPresent(true);
+                numOfPresentPlate++;
             }
         }
 
-        int isPresent = 0;
-        for (int i = 0; i < predList.size(); i++) {
-            PredictedPlateDto dto = predList.get(i);
-            if (carRepo.findByLicensePlate(String.valueOf(dto.getPredictedText())).isPresent()) {
-                dto.setIsPresent(true);
-                isPresent++;
-            }
-        }
-
-        double maxVal = 0;
-        int idx = 0;
-        for (int i = 0; i < predList.size(); i++) {
-            PredictedPlateDto dto = predList.get(i);
-            if (maxVal < (double) dto.getAccuracy()) {
-                maxVal = dto.getAccuracy();
-                idx = i;
+        ModelPredictResult bestModelResult = new ModelPredictResult();
+        double maxAccuracy = 0;
+        for (PredictedPlateDto predictedPlateDto : predRespDto) {
+            double curAccuracy = predictedPlateDto.getModelPredictResult().getAccuracy();
+            if (maxAccuracy < curAccuracy) {
+                maxAccuracy = curAccuracy;
+                bestModelResult = predictedPlateDto.getModelPredictResult();
             }
         }
 
         // Log 엔티티 저장
         Record savedRecord = recordRepo.save(Record.builder()
-                .modelType(predList.get(idx).getModelType())
-                .licensePlate(predList.get(idx).getPredictedText())
-                .accuracy(maxVal)
-                .state(isPresent >= 2 ? "수정 불필요" : "수정 필요")
+                .modelType(bestModelResult.getModelType())
+                .licensePlate(bestModelResult.getPredictedText())
+                .accuracy(maxAccuracy)
+                .state(numOfPresentPlate >= 2 ? "수정 불필요" : "수정 필요")
                 .build());
 
         // Image 엔티티 저장
         // 원본 file 업로드(Aws S3)
         String[] vehicleImgArr = fileService.uploadFile(file, 0);
+
         String vehicleImgUrl = vehicleImgArr[0];
         String vehicleImgTitle = vehicleImgArr[1];
-        String plateImgUrl = String.valueOf(flaskResponse.get("plateImgUrl"));
-        String plateImgTitle = String.valueOf(flaskResponse.get("plateImgTitle"));
+        String plateImgUrl = String.valueOf(flaskResponseDto.getPlateImgUrl());
+        String plateImgTitle = String.valueOf(flaskResponseDto.getPlateImgTitle());
 
         Image vehicleImg = imgRepo.save(Image.builder()
                 .record(savedRecord)
@@ -145,19 +142,16 @@ public class RecordService {
                 .imageTitle(plateImgTitle).build());
 
         // PredictedPlate 엔티티 저장
-        for (int i = 0; i < predList.size(); i++) {
-            PredictedPlateDto dto = predList.get(i);
-            dto.setLogId(savedRecord.getRecordId());
+        for (PredictedPlateDto predictedPlateDto : predRespDto) {
             predRepo.save(PredictedPlate.builder()
                     .record(savedRecord)
-                    .modelType(dto.getModelType())
-                    .isPresent(dto.isPresent())
-                    .accuracy(dto.getAccuracy())
-                    .predictedText(dto.getPredictedText()).build());
+                    .modelPredictResult(predictedPlateDto.getModelPredictResult())
+                    .isPresent(predictedPlateDto.isPresent())
+                    .build());
         }
 
         // RecordResponseDto 구성
-        RecordResponseDto dto = RecordResponseDto.builder()
+        RecordResponseDto recordRespDto = RecordResponseDto.builder()
                 .recordId(savedRecord.getRecordId())
                 .vehicleImage(vehicleImg.getImageUrl())
                 .plateImage(plateImg.getImageUrl())
@@ -167,8 +161,9 @@ public class RecordService {
                 .accuracy(savedRecord.getAccuracy() == 0.0 ? "-" : String.valueOf(savedRecord.getAccuracy()))
                 .build();
 
-        ImageResponseDto plateImage = ImageResponseDto.of(savedRecord.getRecordId(), plateImgUrl, "plate");
-        return CombinationResponseDto.of(dto, predList, plateImage);
+        ImageResponseDto imageRespDto = ImageResponseDto.of(savedRecord.getRecordId(), plateImgUrl, "plate");
+
+        return MultiResponseDto.of(recordRespDto, predRespDto, imageRespDto);
     }
 
     // Record & Image -> RecordResponseDto
@@ -211,7 +206,7 @@ public class RecordService {
         System.out.printf("%s ~ %s", startDate, endDate);
 
         // 기록 조회
-        List<Record> logEntities = recordRepo.findByCreateDateBetween(startDate, endDate);
+        List<Record> logEntities = recordRepo.findByCreatedDateBetween(startDate, endDate);
         System.out.println("logEntities : " + logEntities);
 
         // LogEntity -> LogDto 변환
