@@ -6,11 +6,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
 
-# 파일 경로 설정
-SAVED_MODEL_PATH = "https://kaggle.com/models/kaggle/esrgan-tf2/frameworks/TensorFlow2/variations/esrgan-tf2/versions/1"
 
 # ESRGAN 모델 불러오기
-model = hub.load(SAVED_MODEL_PATH)
+model = hub.load("https://www.kaggle.com/models/kaggle/esrgan-tf2/frameworks/TensorFlow2/variations/esrgan-tf2/versions/1")
 
 # 이미지 전처리
 # Image preprocessing

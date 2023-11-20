@@ -45,7 +45,7 @@ def model_result(image_path):
     if len(result_string) >= 6:
         result_string = result_string[-4:]
 
-    return ["robo", result_string, average_confidence]
+    return {"modelType" : "robo", "predictedText" : result_string, "accuracy" : average_confidence}
 
 if __name__ == "__main__":
     model_result()

@@ -17,7 +17,7 @@ def YOLOv5(file_path, model):
     test = 1
     return_classes = []
     return_confidence =[]
-    return_total = []
+
     for class_num, class_name in results.names.items():  # 클래스별로 반복
         for detection in results.pred[0]:
             x_min, y_min, x_max, y_max, confidence, detected_class = detection
@@ -48,14 +48,12 @@ def YOLOv5(file_path, model):
         
     # 가상의 TensorFlow Tensor 생성
     tensor = tf.constant(avg)
+
     # TensorFlow Tensor을 Python 데이터 타입으로 변환
     python_value = float(tensor.numpy())*100
+
     # 반환값 저장
-    return_total.append("yolo")
-    return_total.append(str(num))
-    return_total.append(python_value)
-    #return return_classes[-4:], avg
-    return return_total
+    return {"modelType" : "yolo", "predictedText" : str(num), "accuracy" : python_value}
 
 def load_yolo(after_path):
     model = torch.hub.load('ultralytics/yolov5','custom',path='./weights/yolov5_num_classifiaction.pt')  # force_reload = recache latest code

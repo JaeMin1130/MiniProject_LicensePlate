@@ -1,5 +1,6 @@
 import uuid
 from flask import Flask, render_template, request, redirect, jsonify
+from flask_cors import CORS, cross_origin
 import boto3
 from botocore.exceptions import NoCredentialsError
 from dotenv import load_dotenv
@@ -45,6 +46,7 @@ file_name = str(uuid.uuid4()) + ".jpg"
 # 이미지 흑백 변경후 이미지
 after_path = f"./super_resolution/{file_name}"
 
+@cross_origin()
 @app.route("/api/records", methods=["POST"])
 def predict():
     if request.method == "POST":
@@ -121,4 +123,4 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Flask app exposing yolov5 models")
     parser.add_argument("--port", default=5000, type=int, help="port number")
     args = parser.parse_args()
-    app.run(host="localhost") 
+    app.run(host="1.252.90.210") 
