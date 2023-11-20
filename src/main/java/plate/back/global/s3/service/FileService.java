@@ -1,4 +1,4 @@
-package plate.back.global.aws.s3.service;
+package plate.back.global.s3.service;
 
 import java.io.IOException;
 import java.util.ArrayList;

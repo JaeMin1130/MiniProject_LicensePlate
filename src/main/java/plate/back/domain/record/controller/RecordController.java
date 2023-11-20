@@ -19,7 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 import plate.back.domain.history.dto.HistoryResponseDto;
-import plate.back.domain.record.dto.CombinationResponseDto;
+import plate.back.domain.record.dto.MultiResponseDto;
 import plate.back.domain.record.dto.RecordResponseDto;
 import plate.back.domain.record.service.RecordService;
 
@@ -32,8 +32,8 @@ public class RecordController {
 
     // 3. 차량 출입 로그 기록
     @PostMapping
-    public ResponseEntity<CombinationResponseDto> recordLog(MultipartFile file) throws IOException {
-        CombinationResponseDto responseDto = recordService.recordLog(file);
+    public ResponseEntity<MultiResponseDto> recordLog(MultipartFile file) throws IOException {
+        MultiResponseDto responseDto = recordService.recordLog(file);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 

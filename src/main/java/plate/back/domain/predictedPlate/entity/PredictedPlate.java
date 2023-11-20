@@ -5,6 +5,7 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -12,12 +13,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import plate.back.domain.record.entity.Record;
+import plate.back.global.flask.dto.ModelPredictResult;
 
 @Getter
 @Entity
@@ -31,24 +30,16 @@ public class PredictedPlate {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Record record;
 
-    @Column(nullable = false, length = 10)
-    private String modelType;
-
-    @Column(nullable = false, length = 10)
-    private String predictedText;
-
-    @Column(nullable = false)
-    private Double accuracy;
+    @Embedded
+    private ModelPredictResult modelPredictResult;
 
     @Column(nullable = false)
     private boolean isPresent;
 
     @Builder
-    public PredictedPlate(Record record, String modelType, String predictedText, Double accuracy, boolean isPresent) {
+    public PredictedPlate(Record record, ModelPredictResult modelPredictResult, boolean isPresent) {
         this.record = record;
-        this.modelType = modelType;
-        this.predictedText = predictedText;
-        this.accuracy = accuracy;
+        this.modelPredictResult = modelPredictResult;
         this.isPresent = isPresent;
     }
 }

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import lombok.extern.slf4j.Slf4j;
 import plate.back.global.exception.CustomException;
 import plate.back.global.exception.ErrorCode;
-import plate.back.global.response.ErrorResponseDto;
+import plate.back.global.exception.ErrorResponseDto;
 
 @Slf4j
 @RestControllerAdvice

@@ -14,5 +14,5 @@ public interface RecordRepository extends JpaRepository<Record, Integer> {
 
     ArrayList<Record> findByLicensePlate(String licensePlate);
 
-    ArrayList<Record> findByCreateDateBetween(Date start, Date end);
+    ArrayList<Record> findByCreatedDateBetween(Date start, Date end);
 }

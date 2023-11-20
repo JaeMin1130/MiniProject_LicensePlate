@@ -1,4 +1,4 @@
-package plate.back.global.aws.s3.config;
+package plate.back.global.s3.config;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
