@@ -50,6 +50,7 @@ public class FlaskService {
         });
 
         log.info("Flask Connection Starts");
+
         ResponseEntity<FlaskResponseDto> response = webClient.post()
                 .uri("/api/records")
                 .contentType(MediaType.MULTIPART_FORM_DATA)
@@ -57,6 +58,7 @@ public class FlaskService {
                 .retrieve()
                 .toEntity(FlaskResponseDto.class)
                 .block(); // block until the response is available
+
         log.info("Response : " + response);
         log.info("Flask Connection Success");
         return response;

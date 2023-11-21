@@ -1,7 +1,7 @@
 package plate.back.domain.record.repository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,5 +14,5 @@ public interface RecordRepository extends JpaRepository<Record, Integer> {
 
     ArrayList<Record> findByLicensePlate(String licensePlate);
 
-    ArrayList<Record> findByCreatedDateBetween(Date start, Date end);
+    ArrayList<Record> findByModifiedDateBetween(LocalDateTime start, LocalDateTime end);
 }
