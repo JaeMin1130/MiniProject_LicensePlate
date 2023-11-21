@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,10 +19,14 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
-import plate.back.domain.history.dto.HistoryResponseDto;
+import plate.back.domain.history.service.HistoryService;
 import plate.back.domain.record.dto.MultiResponseDto;
+import plate.back.domain.record.dto.RecordRequestDto;
 import plate.back.domain.record.dto.RecordResponseDto;
 import plate.back.domain.record.service.RecordService;
+import plate.back.global.flask.FlaskService;
+import plate.back.global.flask.dto.FlaskResponseDto;
+import plate.back.global.s3.service.FileService;
 
 @RequiredArgsConstructor
 @RequestMapping("/api/records")
@@ -29,11 +34,20 @@ import plate.back.domain.record.service.RecordService;
 public class RecordController {
 
     private final RecordService recordService;
+    private final FlaskService flaskService;
+    private final HistoryService historyService;
+    private final FileService fileService;
 
     // 3. 차량 출입 로그 기록
     @PostMapping
     public ResponseEntity<MultiResponseDto> recordLog(MultipartFile file) throws IOException {
-        MultiResponseDto responseDto = recordService.recordLog(file);
+
+        FlaskResponseDto flaskResponseDto = flaskService.callApi(file).getBody();
+
+        String[] vehicleImgArr = fileService.uploadFile(file, 0);
+
+        MultiResponseDto responseDto = recordService.recordLog(flaskResponseDto, vehicleImgArr);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
@@ -41,34 +55,43 @@ public class RecordController {
     @GetMapping("/date/{start}/{end}")
     public ResponseEntity<List<RecordResponseDto>> searchDate(@PathVariable String start, @PathVariable String end)
             throws ParseException {
+
         List<RecordResponseDto> list = recordService.searchDate(start, end);
         return ResponseEntity.status(HttpStatus.OK).body(list);
+
     }
 
     // 5. 차량 번호별 로그 조회
     @GetMapping("/plate/{plate}")
-    public ResponseEntity<?> searchPlate(@PathVariable String plate) {
+    public ResponseEntity<List<RecordResponseDto>> searchPlate(@PathVariable String plate) {
+
         List<RecordResponseDto> list = recordService.searchPlate(plate);
         return ResponseEntity.status(HttpStatus.OK).body(list);
+
     }
 
-    // 6. 수정/삭제 기록 조회
-    @GetMapping("/history")
-    public ResponseEntity<?> getHistory() {
-        List<HistoryResponseDto> list = recordService.getHistory();
-        return ResponseEntity.status(HttpStatus.OK).body(list);
-    }
-
-    // 7. 로그 수정(admin)
+    // 6. 로그 수정(admin)
     @PutMapping
-    public ResponseEntity<?> updateLog(@RequestBody ArrayList<RecordResponseDto> list) throws IOException {
-        recordService.updateLog(list);
+    public ResponseEntity<?> updateRecord(@RequestBody ArrayList<RecordRequestDto.Update> list,
+            @AuthenticationPrincipal String memberId) throws IOException {
+
+        for (RecordRequestDto.Update resqDto : list) {
+            String previousText = recordService.updateRecord(resqDto);
+            historyService.createHistory(resqDto, previousText, memberId, "update");
+        }
+
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    // 8. 로그 삭제(admin)
+    // 7. 로그 삭제(admin)
     @DeleteMapping
-    public ResponseEntity<?> deleteLog(@RequestBody ArrayList<RecordResponseDto> list) {
+    public ResponseEntity<?> deleteRecord(@RequestBody ArrayList<RecordRequestDto.Delete> list,
+            @AuthenticationPrincipal String memberId) {
+
+        for (RecordRequestDto.Delete resqDto : list) {
+            recordService.deleteRecord(resqDto);
+            historyService.createHistory(resqDto, memberId);
+        }
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
