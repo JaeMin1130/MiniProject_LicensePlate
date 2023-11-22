@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +28,7 @@ import plate.back.domain.record.service.RecordService;
 import plate.back.global.flask.FlaskService;
 import plate.back.global.flask.dto.FlaskResponseDto;
 import plate.back.global.s3.service.FileService;
+import plate.back.global.utils.Base64ToMultipartFileConverter;
 
 @RequiredArgsConstructor
 @RequestMapping("/api/records")
@@ -40,13 +42,17 @@ public class RecordController {
 
     // 3. 차량 출입 로그 기록
     @PostMapping
-    public ResponseEntity<MultiResponseDto> recordLog(MultipartFile file) throws IOException {
+    public ResponseEntity<MultiResponseDto> recordLog(MultipartFile vehicleFile) throws IOException {
 
-        FlaskResponseDto flaskResponseDto = flaskService.callApi(file).getBody();
+        FlaskResponseDto flaskResponseDto = flaskService.callApi(vehicleFile).getBody();
 
-        String[] vehicleImgArr = fileService.uploadFile(file, 0);
+        Map<String, String> vehicleImgMap = fileService.uploadFile(vehicleFile, 0);
 
-        MultiResponseDto responseDto = recordService.recordLog(flaskResponseDto, vehicleImgArr);
+        MultipartFile plateFile = Base64ToMultipartFileConverter
+                .convertBase64ToMultipartFile(flaskResponseDto.getPlateImg());
+        Map<String, String> plateImgMap = fileService.uploadFile(plateFile, 1);
+
+        MultiResponseDto responseDto = recordService.recordLog(flaskResponseDto, vehicleImgMap, plateImgMap);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }

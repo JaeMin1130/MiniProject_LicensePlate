@@ -9,7 +9,6 @@ import lombok.ToString;
 @Getter
 public class FlaskResponseDto {
     private int status;
-    private String plateImgUrl;
-    private String plateImgTitle;
+    private String plateImg;
     private List<ModelPredictResult> predictedResults;
 }

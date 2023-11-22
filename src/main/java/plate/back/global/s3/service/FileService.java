@@ -19,7 +19,6 @@ import com.amazonaws.services.s3.model.DeleteObjectsResult;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 import lombok.RequiredArgsConstructor;
@@ -34,24 +33,31 @@ public class FileService {
     private final AmazonS3 amazonS3;
 
     // 파일 업로드
-    public String[] uploadFile(MultipartFile file, int dirIdx) throws IOException {
+    public Map<String, String> uploadFile(MultipartFile file, int dirIdx) throws IOException {
+
         String fileName = UUID.randomUUID().toString() + ".jpg";
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentLength(file.getInputStream().available());
 
-        PutObjectResult result = amazonS3.putObject(
-                new PutObjectRequest(bucket, directories[dirIdx] + fileName, file.getInputStream(), objectMetadata)
-        // .withCannedAcl(CannedAccessControlList.PublicRead)); // 누구나 파일 읽기 가능
-        );
+        amazonS3.putObject(
+                new PutObjectRequest(bucket, directories[dirIdx] + fileName, file.getInputStream(), objectMetadata));
+
+        Map<String, String> result = new HashMap<>();
         String url = amazonS3.getUrl(bucket, directories[dirIdx] + fileName).toString();
-        return new String[] { url, fileName };
+
+        result.put("url", url);
+        result.put("title", fileName);
+
+        return result;
+
     }
 
     // 파일 이동(복사)
     public Map<String, String> moveFile(String imageTitle, String imageType, String answer) {
+
         String[] imgTitleArr = imageTitle.split("\\.");
-        String answerTitle = String.format("%sans%s.%s", imgTitleArr[0], answer,
-                imgTitleArr[1]);
+        String answerTitle = String.format("%sans%s.%s", imgTitleArr[0], answer, imgTitleArr[1]);
+
         CopyObjectRequest copyObjectRequest = new CopyObjectRequest(bucket,
                 "total/" + imageType + "/" + imageTitle, bucket,
                 "relearn/" + imageType + "/" + answerTitle);
@@ -59,7 +65,9 @@ public class FileService {
         amazonS3.copyObject(copyObjectRequest);
 
         Map<String, String> result = new HashMap<>();
+
         String url = amazonS3.getUrl(bucket, "relearn/" + imageType + "/" + answerTitle).toString();
+
         result.put("url", url);
         result.put("title", answerTitle);
 
