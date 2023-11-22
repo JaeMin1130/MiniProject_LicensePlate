@@ -43,7 +43,8 @@ public class RecordServiceImpl implements RecordService {
     private final FileService fileService;
 
     // 3. 차량 출입 기록 기록
-    public MultiResponseDto recordLog(FlaskResponseDto flaskResponseDto, String[] vehicleImgArr) {
+    public MultiResponseDto recordLog(FlaskResponseDto flaskResponseDto, Map<String, String> vehicleImgMap,
+            Map<String, String> plateImgMap) {
 
         // 번호판 인식 실패
         if (flaskResponseDto.getStatus() == 500) {
@@ -56,8 +57,8 @@ public class RecordServiceImpl implements RecordService {
                     .state("수정 필요")
                     .build());
 
-            String vehicleImgUrl = vehicleImgArr[0];
-            String vehicleImgTitle = vehicleImgArr[1];
+            String vehicleImgUrl = vehicleImgMap.get("url");
+            String vehicleImgTitle = vehicleImgMap.get("title");
             Image vehicleImg = imgRepo.save(Image.builder()
                     .record(savedLog)
                     .imageUrl(vehicleImgUrl)
@@ -112,10 +113,10 @@ public class RecordServiceImpl implements RecordService {
                 .build());
 
         // Image 엔티티 저장
-        String vehicleImgUrl = vehicleImgArr[0];
-        String vehicleImgTitle = vehicleImgArr[1];
-        String plateImgUrl = String.valueOf(flaskResponseDto.getPlateImgUrl());
-        String plateImgTitle = String.valueOf(flaskResponseDto.getPlateImgTitle());
+        String vehicleImgUrl = vehicleImgMap.get("url");
+        String vehicleImgTitle = vehicleImgMap.get("title");
+        String plateImgUrl = plateImgMap.get("url");
+        String plateImgTitle = plateImgMap.get("title");
 
         Image vehicleImg = imgRepo.save(Image.builder()
                 .record(savedRecord)
@@ -152,9 +153,49 @@ public class RecordServiceImpl implements RecordService {
         return MultiResponseDto.of(recordRespDto, predRespDto);
     }
 
-    // Record & Image -> RecordResponseDto
+    // 4. 날짜별 기록 조회 yy-MM-dd
+    public List<RecordResponseDto> searchDate(String start, String end) throws ParseException {
+
+        // String -> LocalDateTime 변환
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yy-MM-dd");
+        Date startDate = dateFormat.parse(start);
+        Date endDate = dateFormat.parse(end);
+
+        LocalDateTime startDateTime = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        LocalDateTime endDateTime = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()
+                .withHour(23).withMinute(59).withSecond(59);
+        ;
+
+        log.info(String.format("검색 날짜 : %s ~ %s", startDateTime, endDateTime));
+
+        // 기록 조회
+        List<Record> recordEntityList = recordRepo.findByModifiedDateBetween(startDateTime, endDateTime);
+
+        log.info("recordEntityList : " + recordEntityList);
+
+        // LogEntity -> LogDto 변환
+        List<RecordResponseDto> list = createRecordResponseDtos(recordEntityList);
+
+        return list;
+    }
+
+    // 5. 차량 번호별 기록 조회
+    public List<RecordResponseDto> searchPlate(String plate) {
+
+        // 기록 조회
+        List<Record> recordEntityList = recordRepo.findByLicensePlate(plate);
+
+        // LogEntity -> LogDto 변환
+        List<RecordResponseDto> list = createRecordResponseDtos(recordEntityList);
+
+        return list;
+    }
+
+    // Record + Image -> RecordResponseDto
     private List<RecordResponseDto> createRecordResponseDtos(List<Record> recordEntityList) {
+
         List<RecordResponseDto> list = new ArrayList<>();
+
         for (Record record : recordEntityList) {
             List<Image> imgEntities = imgRepo.findByRecord(record);
             String vehicleImg;
@@ -179,44 +220,6 @@ public class RecordServiceImpl implements RecordService {
                     .accuracy(record.getAccuracy() == 0.0 ? "-" : String.valueOf(record.getAccuracy()))
                     .build());
         }
-        return list;
-    }
-
-    // 4. 날짜별 기록 조회 yy-MM-dd
-    public List<RecordResponseDto> searchDate(String start, String end) throws ParseException {
-
-        // String -> LocalDateTime 변환
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yy-MM-dd");
-        Date startDate = dateFormat.parse(start);
-        Date endDate = dateFormat.parse(end);
-
-        LocalDateTime startDateTime = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-        LocalDateTime endDateTime = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()
-                .withHour(23).withMinute(59).withSecond(59);
-        ;
-
-        log.info(String.format("%s ~ %s", startDateTime, endDateTime));
-
-        // 기록 조회
-        List<Record> recordEntityList = recordRepo.findByModifiedDateBetween(startDateTime, endDateTime);
-
-        log.info("recordEntityList : " + recordEntityList);
-
-        // LogEntity -> LogDto 변환
-        List<RecordResponseDto> list = createRecordResponseDtos(recordEntityList);
-
-        return list;
-    }
-
-    // 5. 차량 번호별 기록 조회
-    public List<RecordResponseDto> searchPlate(String plate) {
-
-        // 기록 조회
-        List<Record> recordEntityList = recordRepo.findByLicensePlate(plate);
-
-        // LogEntity -> LogDto 변환
-        List<RecordResponseDto> list = createRecordResponseDtos(recordEntityList);
-
         return list;
     }
 

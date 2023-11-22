@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class RecordResponseDto {
+
     private Integer recordId;
     private String modelType;
     private String licensePlate;

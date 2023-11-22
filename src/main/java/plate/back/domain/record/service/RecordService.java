@@ -3,6 +3,7 @@ package plate.back.domain.record.service;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
+import java.util.Map;
 
 import plate.back.domain.record.dto.MultiResponseDto;
 import plate.back.domain.record.dto.RecordRequestDto;
@@ -10,7 +11,8 @@ import plate.back.domain.record.dto.RecordResponseDto;
 import plate.back.global.flask.dto.FlaskResponseDto;
 
 public interface RecordService {
-    public MultiResponseDto recordLog(FlaskResponseDto flaskResponseDto, String[] vehicleImgArr) throws IOException;
+    public MultiResponseDto recordLog(FlaskResponseDto flaskResponseDto, Map<String, String> vehicleImgMap,
+            Map<String, String> plateImgMap) throws IOException;
 
     public List<RecordResponseDto> searchDate(String start, String end) throws ParseException;
 
