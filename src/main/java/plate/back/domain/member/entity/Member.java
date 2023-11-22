@@ -17,9 +17,6 @@ import lombok.NoArgsConstructor;
 @Entity
 public class Member {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-
     @Column(length = 20)
     private String memberId;
 

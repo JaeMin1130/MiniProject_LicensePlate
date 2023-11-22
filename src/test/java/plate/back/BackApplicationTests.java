@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import plate.back.domain.car.repository.CarInfoRepository;
+import plate.back.domain.car.repository.CarRepository;
 import plate.back.domain.predictedPlate.repository.PredictedPlateRepository;
 import plate.back.domain.record.entity.Record;
 import plate.back.domain.record.repository.RecordRepository;
@@ -16,7 +16,7 @@ import plate.back.domain.record.repository.RecordRepository;
 class BackApplicationTests {
 
     @Autowired
-    CarInfoRepository carInfoRepo;
+    CarRepository carInfoRepo;
     @Autowired
     RecordRepository logRepo;
     @Autowired

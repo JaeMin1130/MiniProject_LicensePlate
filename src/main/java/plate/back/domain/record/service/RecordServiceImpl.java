@@ -12,13 +12,19 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.annotation.JsonCreator.Mode;
+
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import plate.back.domain.car.repository.CarInfoRepository;
+import plate.back.domain.car.repository.CarRepository;
 import plate.back.domain.image.entity.Image;
+import plate.back.domain.image.entity.ImageType;
 import plate.back.domain.image.repository.ImageRepository;
 import plate.back.domain.predictedPlate.dto.PredictedPlateDto;
+import plate.back.domain.predictedPlate.entity.Enrollment;
+import plate.back.domain.predictedPlate.entity.ModelPredictResult;
+import plate.back.domain.predictedPlate.entity.ModelType;
 import plate.back.domain.predictedPlate.entity.PredictedPlate;
 import plate.back.domain.predictedPlate.repository.PredictedPlateRepository;
 import plate.back.domain.record.dto.MultiResponseDto;
@@ -27,7 +33,6 @@ import plate.back.domain.record.dto.RecordResponseDto;
 import plate.back.domain.record.entity.Record;
 import plate.back.domain.record.repository.RecordRepository;
 import plate.back.global.flask.dto.FlaskResponseDto;
-import plate.back.global.flask.dto.ModelPredictResult;
 import plate.back.global.s3.service.FileService;
 
 @Slf4j
@@ -36,7 +41,7 @@ import plate.back.global.s3.service.FileService;
 @Service
 public class RecordServiceImpl implements RecordService {
 
-    private final CarInfoRepository carRepo;
+    private final CarRepository carRepo;
     private final RecordRepository recordRepo;
     private final ImageRepository imgRepo;
     private final PredictedPlateRepository predRepo;
@@ -51,7 +56,7 @@ public class RecordServiceImpl implements RecordService {
             log.info(flaskResponseDto.toString());
 
             Record savedLog = recordRepo.save(Record.builder()
-                    .modelType("인식 실패")
+                    .modelType(ModelType.Fail)
                     .licensePlate("인식 실패")
                     .accuracy(0.0)
                     .state("수정 필요")
@@ -62,7 +67,7 @@ public class RecordServiceImpl implements RecordService {
             Image vehicleImg = imgRepo.save(Image.builder()
                     .record(savedLog)
                     .imageUrl(vehicleImgUrl)
-                    .imageType("vehicle")
+                    .imageType(ImageType.VEHICLE)
                     .imageTitle(vehicleImgTitle).build());
 
             RecordResponseDto dto = RecordResponseDto.builder()
@@ -70,7 +75,7 @@ public class RecordServiceImpl implements RecordService {
                     .vehicleImage(vehicleImg.getImageUrl())
                     .plateImage("인식 실패")
                     .state(savedLog.getState())
-                    .modelType("인식 실패")
+                    .modelType(ModelType.Fail)
                     .licensePlate("인식 실패")
                     .accuracy("인식 실패")
                     .build();
@@ -86,11 +91,11 @@ public class RecordServiceImpl implements RecordService {
             predRespDto.add(PredictedPlateDto.convertIntoDto(predictedResult));
         }
 
-        int numOfPresentPlate = 0;
+        int numOfEnrolledPlate = 0;
         for (PredictedPlateDto predictedPlateDto : predRespDto) {
             if (carRepo.findByLicensePlate(predictedPlateDto.getModelPredictResult().getPredictedText()).isPresent()) {
-                predictedPlateDto.setIsPresent(true);
-                numOfPresentPlate++;
+                predictedPlateDto.setIsEnrolled(Enrollment.ENROLLED);
+                numOfEnrolledPlate++;
             }
         }
 
@@ -109,7 +114,7 @@ public class RecordServiceImpl implements RecordService {
                 .modelType(bestModelResult.getModelType())
                 .licensePlate(bestModelResult.getPredictedText())
                 .accuracy(maxAccuracy)
-                .state(numOfPresentPlate >= 2 ? "수정 불필요" : "수정 필요")
+                .state(numOfEnrolledPlate >= 2 ? "수정 불필요" : "수정 필요")
                 .build());
 
         // Image 엔티티 저장
@@ -121,13 +126,13 @@ public class RecordServiceImpl implements RecordService {
         Image vehicleImg = imgRepo.save(Image.builder()
                 .record(savedRecord)
                 .imageUrl(vehicleImgUrl)
-                .imageType("vehicle")
+                .imageType(ImageType.VEHICLE)
                 .imageTitle(vehicleImgTitle).build());
 
         Image plateImg = imgRepo.save(Image.builder()
                 .record(savedRecord)
                 .imageUrl(plateImgUrl)
-                .imageType("plate")
+                .imageType(ImageType.PLATE)
                 .imageTitle(plateImgTitle).build());
 
         // PredictedPlate 엔티티 저장
@@ -135,7 +140,7 @@ public class RecordServiceImpl implements RecordService {
             predRepo.save(PredictedPlate.builder()
                     .record(savedRecord)
                     .modelPredictResult(predictedPlateDto.getModelPredictResult())
-                    .isPresent(predictedPlateDto.isPresent())
+                    .isEnrolled(predictedPlateDto.getIsEnrolled())
                     .build());
         }
 
@@ -223,11 +228,11 @@ public class RecordServiceImpl implements RecordService {
         return list;
     }
 
-    // 7. 기록 수정(admin)
+    // 6. 기록 수정(admin)
     public String updateRecord(RecordRequestDto.Update resqDto) {
 
         Optional<Record> optionalLog = recordRepo.findById(resqDto.getRecordId());
-        // if (!optionalLog.isPresent()) {
+        // if (!optionalLog.isEnrolled()) {
         // return response.fail("존재하지 않는 기록입니다.", HttpStatus.BAD_REQUEST);
         // }
 
@@ -245,7 +250,7 @@ public class RecordServiceImpl implements RecordService {
             for (Image imageEntity : imgEntities) {
                 String answer = record.getLicensePlate();
                 String imageTitle = imageEntity.getImageTitle();
-                String imageType = imageEntity.getImageType();
+                ImageType imageType = imageEntity.getImageType();
 
                 Map<String, String> map = fileService.moveFile(imageTitle, imageType,
                         answer);
@@ -267,7 +272,7 @@ public class RecordServiceImpl implements RecordService {
         return previousText;
     }
 
-    // 8. 기록 삭제(admin)
+    // 7. 기록 삭제(admin)
     public void deleteRecord(RecordRequestDto.Delete resqDto) {
 
         int recordId = resqDto.getRecordId();
@@ -276,7 +281,7 @@ public class RecordServiceImpl implements RecordService {
         List<Image> imgEntities = imgRepo.findByRecord(recordRepo.findByRecordId(recordId).get());
         for (Image imgEntity : imgEntities) {
             String imageTitle = imgEntity.getImageTitle();
-            String imageType = imgEntity.getImageType();
+            ImageType imageType = imgEntity.getImageType();
             fileService.deleteFile(imageTitle, imageType);
         }
 

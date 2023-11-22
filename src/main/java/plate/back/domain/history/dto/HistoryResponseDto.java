@@ -6,16 +6,17 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import plate.back.domain.history.entity.TaskType;
 
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class HistoryResponseDto {
-    private Integer id;
+    private Integer historyId;
     private Integer recordId;
     private String memberId;
-    private String workType;
+    private TaskType taskType;
     private String previousText;
     private String currentText;
     private LocalDateTime createdDate;

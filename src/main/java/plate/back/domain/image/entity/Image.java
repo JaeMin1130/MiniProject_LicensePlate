@@ -6,6 +6,8 @@ import org.hibernate.annotations.OnDeleteAction;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -24,15 +26,16 @@ import plate.back.domain.record.entity.Record;
 public class Image {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Integer imageId;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false, cascade = CascadeType.REMOVE)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "record_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Record record;
 
-    @Column(nullable = false, length = 10)
-    private String imageType;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ImageType imageType;
 
     @Column(nullable = false)
     private String imageTitle;
@@ -41,7 +44,7 @@ public class Image {
     private String imageUrl;
 
     @Builder
-    public Image(Record record, String imageType, String imageTitle, String imageUrl) {
+    public Image(Record record, ImageType imageType, String imageTitle, String imageUrl) {
         this.record = record;
         this.imageType = imageType;
         this.imageTitle = imageTitle;

@@ -8,9 +8,9 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import plate.back.domain.history.dto.HistoryResponseDto;
 import plate.back.domain.history.entity.History;
+import plate.back.domain.history.entity.TaskType;
 import plate.back.domain.history.repository.HistoryRepository;
 import plate.back.domain.record.dto.RecordRequestDto;
-import plate.back.domain.record.entity.Record;
 
 @RequiredArgsConstructor
 @Service
@@ -27,10 +27,10 @@ public class HistoryServiceImpl implements HistoryService {
 
         for (History entity : entities) {
             list.add(HistoryResponseDto.builder()
-                    .id(entity.getId())
+                    .historyId(entity.getHistoryId())
                     .recordId(entity.getRecordId())
                     .memberId(entity.getMemberId())
-                    .workType(entity.getTaskType())
+                    .taskType(entity.getTaskType())
                     .currentText(entity.getCurrentText())
                     .previousText(entity.getPreviousText())
                     .createdDate(entity.getCreatedDate())
@@ -47,7 +47,7 @@ public class HistoryServiceImpl implements HistoryService {
                 .recordId(resqDto.getRecordId())
                 .previousText(previousText)
                 .currentText(resqDto.getLicensePlate())
-                .taskType(taskType)
+                .taskType(TaskType.UPDATE)
                 .memberId(memberId).build());
 
     }
@@ -59,7 +59,7 @@ public class HistoryServiceImpl implements HistoryService {
                 .recordId(resqDto.getRecordId())
                 .previousText("delete")
                 .currentText("delete")
-                .taskType("delete")
+                .taskType(TaskType.DELETE)
                 .memberId(memberId).build());
 
     }
