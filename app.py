@@ -1,3 +1,4 @@
+import base64
 import uuid
 from flask import Flask, render_template, request, redirect, jsonify
 from flask_cors import CORS, cross_origin
@@ -19,21 +20,6 @@ import model4_roboflow_license_number_extractor as robo
 import model5_num_classification_YOLO as ncy
 
 load_dotenv() 
-
-aws_access_key = os.environ.get('AWS_ACCESS_KEY_ID')
-aws_secret_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
-
-def upload_to_s3_and_get_url(data, bucket_name, folder_name, file_name=None):
-    if file_name is None:
-        file_name = str(uuid.uuid4()) + ".jpg"
-    
-    s3 = boto3.client('s3', aws_access_key_id=aws_access_key, aws_secret_access_key=aws_secret_key)
-    try:
-        s3.upload_fileobj(data, bucket_name, f'{folder_name}/{file_name}')
-        img_url = f"https://{bucket_name}.s3.ap-northeast-2.amazonaws.com/{folder_name}/{file_name}"
-        return True, img_url, file_name
-    except NoCredentialsError:
-        return False, None, None     
 
 app = Flask(__name__)
 
@@ -58,7 +44,6 @@ def predict():
             return jsonify({"status":500, "error": "No selected file"})
 
         img_bytes = file.read()
-        img = Image.open(io.BytesIO(img_bytes))
 
         # 1. YOLOv5s : 현장 사진에서 번호판 인식
         try:
@@ -79,45 +64,42 @@ def predict():
         try:
             esrgan.model_result(file_path_name, after_path)
             print("file_path_name", file_path_name)
-            print("step3 passed")
+            print("step2 passed")
         except Exception as e:
             os.remove(file_path_name)
             return jsonify({"status":500, "error": str(e)}) 
 
-        plate_img = Image.open(after_path)
-
-        with NamedTemporaryFile(delete=False, suffix=".jpg") as temp_plate_img_file:
-            plate_img.save(temp_plate_img_file, format='JPEG')
-
-        # 번호판 이미지 s3에 업로드
-        with open(temp_plate_img_file.name, 'rb') as plate_file:
-            success, img_url, img_title = upload_to_s3_and_get_url(plate_file, 'licenseplate-iru', 'total/plate')
-
-        os.remove(temp_plate_img_file.name)
-
         # 3. OCR
         ocr_result = ocr.model_result(after_path)
-        print("step4 passed")
+        print("step3 passed")
 
         # 4. CNN
         robo_result = robo.model_result(after_path)
-        print("step5 passed")
+        print("step4 passed")
 
         # 5. YOLOv5x
         try:
             yolo_result = ncy.load_yolo(after_path)
+            print("step5 passed")
         except Exception as e:
             return jsonify({"status":500, "error": str(e)}) 
+
+
+        # ESRGAN 거친 이미지 base64로 변환(json serializable)
+        img_data = io.BytesIO()
+        plate_image = Image.open(after_path)
+        plate_image.save(img_data, format='JPEG')
+        img_data.seek(0)
+        base64_img = base64.b64encode(img_data.read()).decode('utf-8')
 
         os.remove(file_path_name)
         os.remove(after_path)
 
         return jsonify({
-            "status" : 200,
-            "predictedResults":[yolo_result, ocr_result, robo_result],
-            "plateImgUrl": img_url,
-            "plateImgTitle": img_title
-        })    
+                "status" : 200,
+                "predictedResults":[yolo_result, ocr_result, robo_result],
+                "plateImg": base64_img
+            })    
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Flask app exposing yolov5 models")
