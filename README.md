@@ -58,9 +58,10 @@
 - [x] 출입 기록 수정/삭제 히스토리 기능 
 
 ## 5. 서비스 아키텍처
-![image](https://github.com/JaeMin1130/MiniProject_LicensePlate/assets/98063854/51f47020-dab4-4188-9b3b-a2526080841c)
+![image](https://github.com/JaeMin1130/MiniProject_LicensePlate/assets/98063854/5ccd2dbc-3513-49d8-9ca4-911bd96507e3)
 
-## 7. REST API 명세 
+
+## 6. REST API 명세 
 ### Spring Boot
 | ID | Method | URI | Params | Return | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -78,14 +79,14 @@
 | --- | --- | --- | --- | --- | --- |
 | 3 | POST | api/records | MultipartFile file | PredictDto | AI 모델 번호판 예측 |
 
-## 8. DB 설계(ERD)
+## 7. DB 설계(ERD)
 ![image](https://github.com/JaeMin1130/MiniProject_LicensePlate/assets/98063854/d23d592a-b65e-4f65-87c8-9cb688fbf6fd)
 
-## 9. 시퀀스 다이어그램
+## 8. 시퀀스 다이어그램
 ![image](https://github.com/JaeMin1130/MiniProject_LicensePlate/assets/98063854/7916fabc-03d7-4593-bba2-d198cf1da670)
 
-## 10. UML(Class Diagram)
+## 9. UML(Class Diagram)
 ![image](https://github.com/EUNJIN6131/MiniProject_LicensePlate/assets/98063854/7928338d-5949-4158-8b05-b5059c61c8cc)
 
-## 11. 개발 일지 
-<a href="https://shrub-snap-550.notion.site/CRUD-566be659b7bf4693a6515f408cf2f1d9?pvs=4">개발 일지 보러 가기  <img width="23" src="https://upload.wikimedia.org/wikipedia/commons/e/e9/Notion-logo.svg"> </a>****
+## 10. 개발 노트 
+<a href="https://shrub-snap-550.notion.site/CRUD-566be659b7bf4693a6515f408cf2f1d9?pvs=4">개발 노트 보러 가기  <img width="23" src="https://upload.wikimedia.org/wikipedia/commons/e/e9/Notion-logo.svg"> </a>****
