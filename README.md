@@ -62,28 +62,28 @@
 
 
 ## 6. REST API 명세 
-### Spring Boot
-| ID | Method | URI | Params | Return | Description |
-| --- | --- | --- | --- | --- | --- |
-| 1 | POST  | api/members/sign-up | MemberDto  | Boolean | 회원가입 |
-| 2 | POST | api/members/sign-in | MemberDto  | MemberDto  | 로그인 |
-| 3 | POST | api/records | MultipartFile  | List<RecordDto> | 차량 출입 기록 |
-| 4 | GET | api/records/date/{date1}/{date2} | String, String  | List<RecordDto> | 날짜별 기록 조회 |
-| 5 | GET | api/records/plate/{plate} | String | List<RecordDto> | 차량 번호별 기록 조회 |
-| 7 | PUT | api/records | List<RecordDto> | Boolean | 기록 수정 |
-| 8 | DELETE              | api/records | List<RecordDto>  | Boolean | 기록 삭제 |
-| 6 | GET | api/records/history |  | List<HistoryDto> | 수정/삭제 기록 조회 |
+### Spring Boot(port:8080)
+| ID | Domain | Method | URI | Description |
+| --- | --- | --- | --- | --- |
+| 1 | member | POST  | api/members/sign-up | 회원가입 |
+| 2 | member | POST | api/members/sign-in | 로그인 |
+| 3 | record | POST | api/records | 차량 출입 기록 |
+| 4 | record | GET | api/records/date/{date1}/{date2} | 날짜별 기록 조회 |
+| 5 | record | GET | api/records/plate/{plate} | 차량 번호별 기록 조회 |
+| 6 | record | PUT | api/records | 기록 수정 |
+| 7 | record | DELETE              | api/records | 기록 삭제 |
+| 8 | history | GET | api/histories | 수정/삭제 기록 조회 |
 
-### Flask
-| ID | Method | URI | Params | Return | Description |
-| --- | --- | --- | --- | --- | --- |
-| 3 | POST | api/records | MultipartFile file | PredictDto | AI 모델 번호판 예측 |
+### Flask(port:5000)
+| ID | Domain | Method | URI | Description |
+| --- | --- | --- | --- | --- |
+| 3 | record | POST | api/records | AI 모델 번호판 예측 |
 
 ## 7. DB 설계(ERD)
-![image](https://github.com/JaeMin1130/MiniProject_LicensePlate/assets/98063854/d23d592a-b65e-4f65-87c8-9cb688fbf6fd)
+![image](https://github.com/JaeMin1130/MiniProject_LicensePlate/assets/98063854/9e282ca5-41af-4036-94a9-0c92d77d85ab)
 
 ## 8. 시퀀스 다이어그램
-![image](https://github.com/JaeMin1130/MiniProject_LicensePlate/assets/98063854/7916fabc-03d7-4593-bba2-d198cf1da670)
+![image](https://github.com/JaeMin1130/MiniProject_LicensePlate/assets/98063854/0f1cec48-5445-4b6a-8285-67109799cc9a)
 
 ## 9. UML(Class Diagram)
 ![image](https://github.com/EUNJIN6131/MiniProject_LicensePlate/assets/98063854/7928338d-5949-4158-8b05-b5059c61c8cc)
