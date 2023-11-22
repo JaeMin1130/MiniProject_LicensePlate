@@ -13,16 +13,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
-public class CarInfo {
+public class Car {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Integer carId;
 
     @Column(nullable = false, length = 4)
     private String licensePlate;
 
     @Builder
-    public CarInfo(String licensePlate) {
+    public Car(String licensePlate) {
         this.licensePlate = licensePlate;
     }
 }

@@ -18,17 +18,17 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import plate.back.domain.record.entity.Record;
-import plate.back.global.flask.dto.ModelPredictResult;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
 public class PredictedPlate {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Integer predictId;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false, cascade = CascadeType.REMOVE)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "record_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Record record;
@@ -37,12 +37,12 @@ public class PredictedPlate {
     private ModelPredictResult modelPredictResult;
 
     @Column(nullable = false)
-    private boolean isPresent;
+    private Enrollment isEnrolled;
 
     @Builder
-    public PredictedPlate(Record record, ModelPredictResult modelPredictResult, boolean isPresent) {
+    public PredictedPlate(Record record, ModelPredictResult modelPredictResult, Enrollment isEnrolled) {
         this.record = record;
         this.modelPredictResult = modelPredictResult;
-        this.isPresent = isPresent;
+        this.isEnrolled = isEnrolled;
     }
 }

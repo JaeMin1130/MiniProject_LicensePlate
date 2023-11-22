@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import plate.back.domain.predictedPlate.entity.ModelType;
 
 @Getter
 @AllArgsConstructor
@@ -12,7 +13,7 @@ import lombok.NoArgsConstructor;
 public class RecordResponseDto {
 
     private Integer recordId;
-    private String modelType;
+    private ModelType modelType;
     private String licensePlate;
     private String accuracy;
     private String vehicleImage;

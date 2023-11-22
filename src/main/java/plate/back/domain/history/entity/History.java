@@ -2,6 +2,8 @@ package plate.back.domain.history.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -18,15 +20,16 @@ public class History extends BaseTime {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Integer historyId;
 
     private Integer recordId;
 
     @Column(nullable = false, length = 20)
     private String memberId;
 
-    @Column(nullable = false, length = 10)
-    private String taskType;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TaskType taskType;
 
     @Column(nullable = false, length = 10)
     private String previousText;
@@ -35,7 +38,7 @@ public class History extends BaseTime {
     private String currentText;
 
     @Builder
-    public History(Integer recordId, String memberId, String taskType, String previousText, String currentText) {
+    public History(Integer recordId, String memberId, TaskType taskType, String previousText, String currentText) {
         this.recordId = recordId;
         this.memberId = memberId;
         this.taskType = taskType;

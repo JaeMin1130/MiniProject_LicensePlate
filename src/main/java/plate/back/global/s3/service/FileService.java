@@ -22,6 +22,7 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 import lombok.RequiredArgsConstructor;
+import plate.back.domain.image.entity.ImageType;
 
 @RequiredArgsConstructor
 @Service
@@ -53,7 +54,7 @@ public class FileService {
     }
 
     // 파일 이동(복사)
-    public Map<String, String> moveFile(String imageTitle, String imageType, String answer) {
+    public Map<String, String> moveFile(String imageTitle, ImageType imageType, String answer) {
 
         String[] imgTitleArr = imageTitle.split("\\.");
         String answerTitle = String.format("%sans%s.%s", imgTitleArr[0], answer, imgTitleArr[1]);
@@ -75,7 +76,7 @@ public class FileService {
     }
 
     // 특정 파일 삭제
-    public void deleteFile(String imageTitle, String imageType) {
+    public void deleteFile(String imageTitle, ImageType imageType) {
 
         List<KeyVersion> keysToDelete = new ArrayList<>();
 

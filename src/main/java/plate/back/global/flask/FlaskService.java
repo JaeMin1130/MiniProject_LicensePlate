@@ -25,9 +25,6 @@ import plate.back.global.utils.RateLimiter;
 @Service
 public class FlaskService {
 
-    @Value("${flask.api.url}")
-    private String flaskApiUrl;
-
     private final RateLimiter rateLimiter;
     private final WebClient webClient = WebClient.builder().baseUrl("http://1.252.90.210:5000").build();
 
