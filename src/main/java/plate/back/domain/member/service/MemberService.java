@@ -1,70 +1,72 @@
 package plate.back.domain.member.service;
 
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.core.Authentication;
+import java.util.Optional;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import plate.back.domain.member.dto.MemberRequestDto;
 import plate.back.domain.member.dto.MemberResponseDto;
-import plate.back.domain.member.entity.Authority;
+import plate.back.domain.member.entity.Role;
 import plate.back.domain.member.entity.Member;
 import plate.back.domain.member.repository.MemberRepository;
 import plate.back.global.exception.CustomException;
 import plate.back.global.exception.ErrorCode;
-import plate.back.global.jwt.JwtTokenProvider;
+import plate.back.global.jwt.JwtProvider;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class MemberService {
 
-    private final MemberRepository userRepo;
+    private final MemberRepository memberRepo;
     private final PasswordEncoder passwordEncoder;
-    private final JwtTokenProvider jwtTokenProvider;
-    private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
     // 1. 회원가입
-    public void signUp(MemberRequestDto.SignUp signUp) {
-        if (userRepo.existsByMemberId(signUp.getMemberId())) {
+    public void signUp(MemberRequestDto.SignUp resqDto) {
+
+        if (memberRepo.existsByMemberId(resqDto.getMemberId())) {
             throw new CustomException(ErrorCode.DUPLICATED_ID);
         }
 
-        Member user = Member.builder()
-                .memberId(signUp.getMemberId())
-                .password(passwordEncoder.encode(signUp.getPassword()))
-                .name(signUp.getName())
-                .role(Authority.ROLE_MEMBER)
+        Member member = Member.builder()
+                .memberId(resqDto.getMemberId())
+                .password(passwordEncoder.encode(resqDto.getPassword()))
+                .role(Role.MEMBER)
                 .build();
 
-        userRepo.save(user);
+        memberRepo.save(member);
     }
 
     // 2. 로그인
-    public MemberResponseDto signIn(MemberRequestDto.SignIn signInDto) {
+    public MemberResponseDto signIn(MemberRequestDto.SignIn resqDto) {
 
-        if (!userRepo.existsByMemberId(signInDto.getMemberId().trim())) {
+        // 아이디 검증
+        Optional<Member> option = memberRepo.findById(resqDto.getMemberId());
+        if (!option.isPresent()) {
             throw new CustomException(ErrorCode.Member_NOT_FOUND);
         }
-        /*
-         * 1. Login ID/PW 를 기반으로 Authentication 객체 생성
-         * 이때 authentication 는 인증 여부를 확인하는 authenticated 값이 false
-         */
-        UsernamePasswordAuthenticationToken authenticationToken = signInDto.toAuthentication();
+        log.info("아이디 검증 통과");
 
-        /*
-         * 2. 실제 검증 (사용자 비밀번호 체크)이 이루어지는 부분
-         * authenticate 매서드가 실행될 때 CustomUserDetailsService 에서 만든 loadUserByUsername
-         * 메서드가 실행됨
-         */
-        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-        if (!authentication.isAuthenticated()) {
+        // 비밀번호 검증
+        Member member = option.get();
+        String savedPassword = member.getPassword();
+        String enteredPassword = resqDto.getPassword();
+
+        log.info("입력한 비밀번호 : " + enteredPassword);
+        log.info("저장된 비밀번호 : " + savedPassword);
+
+        if (!passwordEncoder.matches(enteredPassword, savedPassword)) {
             throw new CustomException(ErrorCode.PASSWORD_NOT_MATCH);
         }
 
-        // 3. 인증 정보를 기반으로 JWT 토큰 생성
-        String accessToken = jwtTokenProvider.generateToken(authentication);
+        log.info("비밀번호 검증 통과");
+
+        // accessToken, refreshToken 생성
+        String accessToken = JwtProvider.createAccessToken(member);
+        String refreshToken = JwtProvider.createRefreshToken(member);
 
         return MemberResponseDto.of(accessToken);
     }

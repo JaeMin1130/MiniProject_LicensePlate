@@ -23,17 +23,13 @@ public class Member {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false, length = 10)
-    private String name;
-
     @Enumerated(EnumType.STRING)
-    private Authority role;
+    private Role role;
 
     @Builder
-    public Member(String memberId, String password, String name, Authority role) {
+    public Member(String memberId, String password, Role role) {
         this.memberId = memberId;
         this.password = password;
-        this.name = name;
         this.role = role;
     }
 }
