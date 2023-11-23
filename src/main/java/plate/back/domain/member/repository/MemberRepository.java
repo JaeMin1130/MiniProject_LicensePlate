@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import plate.back.domain.member.entity.Member;
 
-public interface MemberRepository extends JpaRepository<Member, Integer> {
+public interface MemberRepository extends JpaRepository<Member, String> {
     Optional<Member> findByMemberId(String email);
 
     boolean existsByMemberId(String email);

@@ -23,16 +23,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(exception.getErrorCode().getStatus().value()).body(errorResponseDto);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> undefinedException(Exception exception) {
+    // @ExceptionHandler(Exception.class)
+    // public ResponseEntity<ErrorResponse> undefinedException(Exception exception)
+    // {
 
-        ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
-                .statusCode(exception.hashCode())
-                .message(exception.getMessage())
-                .build();
+    // ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
+    // .statusCode(exception.hashCode())
+    // .message(exception.getMessage())
+    // .build();
 
-        log.error(exception.getMessage(), exception);
+    // log.error(exception.getMessage(), exception);
 
-        return ResponseEntity.badRequest().build();
-    }
+    // return ResponseEntity.badRequest().build();
+    // }
 }

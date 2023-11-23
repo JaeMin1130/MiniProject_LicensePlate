@@ -13,10 +13,10 @@ public enum ErrorCode {
     INVALID_PAGINATION_SIZE(HttpStatus.BAD_REQUEST, "page size에 음수가 들어갈 수 없습니다."),
 
     // Member Exception
-    Member_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 유저가 존재하지 않습니다."),
-    Member_DELETED(HttpStatus.BAD_REQUEST, "탈퇴한 사용자입니다."),
-    PASSWORD_NOT_MATCH(HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다."),
     DUPLICATED_ID(HttpStatus.BAD_REQUEST, "이미 가입된 아이디 입니다"),
+    Member_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 유저가 존재하지 않습니다."),
+    PASSWORD_NOT_MATCH(HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다."),
+    Member_DELETED(HttpStatus.BAD_REQUEST, "탈퇴한 사용자입니다."),
 
     // Token Exception
     REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "리프레시 토큰이 만료되었습니다."),

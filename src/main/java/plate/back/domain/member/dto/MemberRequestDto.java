@@ -22,6 +22,7 @@ public class MemberRequestDto {
 
     @Getter
     public static class SignIn {
+
         @NotEmpty(message = "이메일은 필수 입력값입니다.")
         private String memberId;
 
@@ -31,6 +32,6 @@ public class MemberRequestDto {
         public UsernamePasswordAuthenticationToken toAuthentication() {
             return new UsernamePasswordAuthenticationToken(memberId, password);
         }
-    }
 
+    }
 }

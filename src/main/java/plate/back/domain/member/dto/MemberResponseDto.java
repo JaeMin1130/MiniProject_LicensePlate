@@ -10,8 +10,10 @@ public class MemberResponseDto {
     private String accessToken;
 
     public static MemberResponseDto of(String accessToken) {
+
         return MemberResponseDto.builder()
                 .accessToken(accessToken)
                 .build();
+
     }
 }
