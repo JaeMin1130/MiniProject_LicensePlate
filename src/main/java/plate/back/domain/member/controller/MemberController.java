@@ -30,6 +30,6 @@ public class MemberController {
     @PostMapping("/sign-in")
     public ResponseEntity<MemberResponseDto> signIn(@RequestBody MemberRequestDto.SignIn signIn) {
         MemberResponseDto memberResponseDto = memberService.signIn(signIn);
-        return ResponseEntity.status(HttpStatus.CREATED).body(memberResponseDto);
+        return ResponseEntity.status(HttpStatus.OK).body(memberResponseDto);
     }
 }

@@ -19,8 +19,11 @@ public enum ErrorCode {
     Member_DELETED(HttpStatus.BAD_REQUEST, "탈퇴한 사용자입니다."),
 
     // Token Exception
+    ACCESS_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "액세스 토근이 만료되었습니다."),
+    INVALID_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "액세스 토큰이 유효하지 않습니다."),
     REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "리프레시 토큰이 만료되었습니다."),
-    INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "리프레시 토큰이 유효하지 않습니다.");
+    INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "리프레시 토큰이 유효하지 않습니다."),
+    INVALID_TOKEN_FORMAT(HttpStatus.BAD_REQUEST, "유효한 토큰 형식이 아닙니다.");
 
     // Flask Exception
 

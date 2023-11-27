@@ -9,12 +9,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import plate.back.domain.member.dto.MemberRequestDto;
 import plate.back.domain.member.dto.MemberResponseDto;
-import plate.back.domain.member.entity.Role;
 import plate.back.domain.member.entity.Member;
+import plate.back.domain.member.entity.Role;
 import plate.back.domain.member.repository.MemberRepository;
+import plate.back.domain.refreshToken.service.TokenService;
 import plate.back.global.exception.CustomException;
 import plate.back.global.exception.ErrorCode;
-import plate.back.global.jwt.JwtProvider;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -22,6 +22,7 @@ import plate.back.global.jwt.JwtProvider;
 public class MemberService {
 
     private final MemberRepository memberRepo;
+    private final TokenService refreshTokenService;
     private final PasswordEncoder passwordEncoder;
 
     // 1. 회원가입
@@ -65,9 +66,9 @@ public class MemberService {
         log.info("비밀번호 검증 통과");
 
         // accessToken, refreshToken 생성
-        String accessToken = JwtProvider.createAccessToken(member);
-        String refreshToken = JwtProvider.createRefreshToken(member);
+        String accessToken = refreshTokenService.createAccessToken(member);
+        String refreshToken = refreshTokenService.createRefreshToken(member);
 
-        return MemberResponseDto.of(accessToken);
+        return MemberResponseDto.of(accessToken, refreshToken);
     }
 }

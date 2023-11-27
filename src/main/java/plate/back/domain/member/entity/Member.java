@@ -4,8 +4,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -25,7 +23,7 @@ public class Member {
 
     @Enumerated(EnumType.STRING)
     private Role role;
-
+    
     @Builder
     public Member(String memberId, String password, Role role) {
         this.memberId = memberId;
