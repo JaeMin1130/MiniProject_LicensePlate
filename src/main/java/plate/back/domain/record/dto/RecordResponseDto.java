@@ -20,7 +20,4 @@ public class RecordResponseDto {
     private String plateImage;
     private String state;
 
-    public void setState(String state) {
-        this.state = state;
-    }
 }

@@ -12,8 +12,6 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.annotation.JsonCreator.Mode;
-
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +46,7 @@ public class RecordServiceImpl implements RecordService {
     private final FileService fileService;
 
     // 3. 차량 출입 기록 기록
+    @Override
     public MultiResponseDto recordLog(FlaskResponseDto flaskResponseDto, Map<String, String> vehicleImgMap,
             Map<String, String> plateImgMap) {
 
@@ -159,6 +158,7 @@ public class RecordServiceImpl implements RecordService {
     }
 
     // 4. 날짜별 기록 조회 yy-MM-dd
+    @Override
     public List<RecordResponseDto> searchDate(String start, String end) throws ParseException {
 
         // String -> LocalDateTime 변환
@@ -185,6 +185,7 @@ public class RecordServiceImpl implements RecordService {
     }
 
     // 5. 차량 번호별 기록 조회
+    @Override
     public List<RecordResponseDto> searchPlate(String plate) {
 
         // 기록 조회
@@ -229,6 +230,7 @@ public class RecordServiceImpl implements RecordService {
     }
 
     // 6. 기록 수정(admin)
+    @Override
     public String updateRecord(RecordRequestDto.Update resqDto) {
 
         Optional<Record> optionalLog = recordRepo.findById(resqDto.getRecordId());
@@ -273,6 +275,7 @@ public class RecordServiceImpl implements RecordService {
     }
 
     // 7. 기록 삭제(admin)
+    @Override
     public void deleteRecord(RecordRequestDto.Delete resqDto) {
 
         int recordId = resqDto.getRecordId();
