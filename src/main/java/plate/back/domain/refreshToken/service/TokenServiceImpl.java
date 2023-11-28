@@ -66,7 +66,7 @@ public class TokenServiceImpl implements TokenService {
     @Override
     public ReissueResponseDto reissueAccessToken(String refreshToken) {
 
-        log.info("리프레시 토큰 : " + refreshToken);
+        log.info("Refresh Token from Request Header : " + refreshToken);
 
         // refreshToken 유효성 검증
         RefreshToken savedRefreshToken = refreshTokenRepo.findByValue(refreshToken)

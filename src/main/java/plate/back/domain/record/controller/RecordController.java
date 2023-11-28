@@ -25,8 +25,8 @@ import plate.back.domain.record.dto.MultiResponseDto;
 import plate.back.domain.record.dto.RecordRequestDto;
 import plate.back.domain.record.dto.RecordResponseDto;
 import plate.back.domain.record.service.RecordService;
-import plate.back.global.flask.FlaskService;
 import plate.back.global.flask.dto.FlaskResponseDto;
+import plate.back.global.flask.service.FlaskService;
 import plate.back.global.s3.service.FileService;
 import plate.back.global.utils.Base64ToMultipartFileConverter;
 

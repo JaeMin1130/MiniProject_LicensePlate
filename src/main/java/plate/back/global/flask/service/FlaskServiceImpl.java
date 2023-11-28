@@ -1,11 +1,9 @@
-package plate.back.global.flask;
+package plate.back.global.flask.service;
 
 import java.io.IOException;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -23,11 +21,12 @@ import plate.back.global.utils.RateLimiter;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class FlaskService {
+public class FlaskServiceImpl implements FlaskService{
 
     private final RateLimiter rateLimiter;
     private final WebClient webClient = WebClient.builder().baseUrl("http://1.252.90.210:5000").build();
 
+    @Override
     public ResponseEntity<FlaskResponseDto> callApi(MultipartFile file) throws IOException {
         // Check if the request is allowed by the rate limiter
         if (!rateLimiter.allowRequest()) {
