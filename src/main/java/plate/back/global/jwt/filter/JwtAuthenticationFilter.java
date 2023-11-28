@@ -1,13 +1,16 @@
 package plate.back.global.jwt.filter;
 
 import java.io.IOException;
+import java.util.List;
 
-import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
@@ -24,34 +27,42 @@ import plate.back.domain.refreshToken.service.TokenService;
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final TokenService tokenService;
-    
-    @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+        private final TokenService tokenService;
 
-            // 요청에서 토큰 가져오기.
-            String token = tokenService.parseBearerToken(request);
+        @Override
+        protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+                        FilterChain filterChain)
+                        throws ServletException, IOException {
 
-            log.info("Filter is running...");
+                // 요청에서 토큰 가져오기.
+                String token = tokenService.parseBearerToken(request);
 
-            // 토큰 검사하기. JWT이므로 인증 서버에 요청 하지 않고도 검증 가능.
-            DecodedJWT decodedJwt = tokenService.verifyToken(token);
+                log.info("Filter is running...");
 
-            // log.info("Authenticated user ID : " + userId);
-            String memberId = decodedJwt.getSubject();
-            String memberRole = decodedJwt.getClaim("role").toString();
+                // 토큰 검사하기. JWT이므로 인증 서버에 요청 하지 않고도 검증 가능.
+                DecodedJWT decodedJwt = tokenService.verifyToken(token);
 
-            // 인증 완료; SecurityContextHolder에 등록해야 인증된 사용자라고 생각한다.
-            AbstractAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(memberId, null,
-                    AuthorityUtils.createAuthorityList(memberRole));
-            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                String memberId = decodedJwt.getSubject();
+                String memberRole = decodedJwt.getClaim("role").asString(); // toString()은 따옴표까지 포함된다.
+                
+                List<GrantedAuthority> memberRoleList = AuthorityUtils.createAuthorityList(memberRole);
 
-            SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-            securityContext.setAuthentication(authentication);
-            SecurityContextHolder.setContext(securityContext);
+                // 인증 완료 후 Authentication 인스턴스를 만들어 SecurityContextHolder에 등록
 
-            filterChain.doFilter(request, response);
+                // principal 필드 타입이 Object라서 아무거나 넣어도 되지만, 통상적으로 UserDetails 인스턴스를 넣는다.
+                UserDetails userDetails = new User(memberId, "null", memberRoleList);
+                
+                // Authentication(interface)> AbstractAuthenticationToken > UsernamePasswordAuthenticationToken
+                Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, "null", memberRoleList);
+
+                log.info("Authentication : " + authentication.toString());
+
+                SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+                securityContext.setAuthentication(authentication);
+                                
+                SecurityContextHolder.setContext(securityContext);
+
+                filterChain.doFilter(request, response);
 
         }
 

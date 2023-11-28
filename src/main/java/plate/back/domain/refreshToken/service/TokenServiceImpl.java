@@ -19,7 +19,7 @@ import plate.back.domain.refreshToken.entity.RefreshToken;
 import plate.back.domain.refreshToken.repository.RefreshTokenRepository;
 import plate.back.global.exception.CustomException;
 import plate.back.global.exception.ErrorCode;
-import plate.back.global.jwt.utils.JwtProperties;
+import plate.back.global.jwt.JwtProperties;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -34,7 +34,7 @@ public class TokenServiceImpl implements TokenService {
 
         String accessToken = JWT.create()
                 .withSubject(member.getMemberId())
-                .withClaim("role", member.getRole().toString())
+                .withClaim("role", member.getRole().getValue())
                 .withExpiresAt(validity)
                 .sign(JwtProperties.ALGORITHM);
 

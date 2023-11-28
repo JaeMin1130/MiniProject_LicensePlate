@@ -13,6 +13,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
+import plate.back.domain.member.entity.Role;
 import plate.back.domain.refreshToken.service.TokenService;
 import plate.back.global.jwt.filter.JwtAuthenticationFilter;
 import plate.back.global.jwt.filter.JwtExceptionFilter;
@@ -21,13 +22,13 @@ import plate.back.global.jwt.filter.JwtExceptionFilter;
 @EnableWebSecurity // 시큐리티 활성화 -> 기본 스프링 필터체인에 등록
 @RequiredArgsConstructor
 public class SecurityConfig {
-    
+
     private final TokenService tokenService;
 
-    /*  
-        to do : 이 방법은 Spring Security의 다른 보안 요소도 싸그리 무시해서 권장되지 않는다고 한다.
-                필터체인을 추가로 생성해서 하는 방법으로 바꾸면 좋다.
-    */
+    /*
+     * to do : 이 방법은 Spring Security의 다른 보안 요소도 싸그리 무시해서 권장되지 않는다고 한다.
+     * 필터체인을 추가로 생성해서 하는 방법으로 바꾸면 좋다.
+     */
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring()
@@ -44,11 +45,11 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers("/api/members/**").permitAll()
+                            .requestMatchers(HttpMethod.POST, "/api/records").permitAll()
                             .requestMatchers("/api/records/plate/**", "/api/records/date/**").authenticated()
-                            .requestMatchers(HttpMethod.POST, "/api/records").authenticated()
-                            .requestMatchers("/api/histories").hasRole("ADMIN")
-                            .requestMatchers(HttpMethod.DELETE, "/api/records").hasRole("ADMIN")
-                            .requestMatchers(HttpMethod.PUT, "/api/records").hasRole("ADMIN");
+                            .requestMatchers("/api/histories").hasRole(Role.ADMIN.toString())
+                            .requestMatchers(HttpMethod.DELETE, "/api/records").hasRole(Role.ADMIN.toString())
+                            .requestMatchers(HttpMethod.PUT, "/api/records").hasRole(Role.ADMIN.toString());
                     // auth.requestMatchers("/**").permitAll();
                 })
                 .addFilterBefore(new JwtAuthenticationFilter(tokenService), UsernamePasswordAuthenticationFilter.class)
