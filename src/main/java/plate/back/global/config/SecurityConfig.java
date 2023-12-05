@@ -32,10 +32,12 @@ public class SecurityConfig {
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring()
+                .requestMatchers("swagger-ui/**")
+                .requestMatchers("v3/api-docs/**")
                 .requestMatchers(HttpMethod.POST, "/api/members/**")
                 .requestMatchers(HttpMethod.POST, "/api/reissue/accessToken");
     }
-
+    
     @Bean
     public SecurityFilterChain config(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable()) // CSRF(Cross-Site Request Forgery) 보호 비활성화

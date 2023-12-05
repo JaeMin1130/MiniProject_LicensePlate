@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import plate.back.domain.history.service.HistoryService;
 import plate.back.domain.record.dto.MultiResponseDto;
@@ -30,6 +32,7 @@ import plate.back.global.flask.service.FlaskService;
 import plate.back.global.s3.service.FileService;
 import plate.back.global.utils.Base64ToMultipartFileConverter;
 
+@Tag(name = "Record API", description = "차량 출입 기록 CRUD")
 @RequiredArgsConstructor
 @RequestMapping("/api/records")
 @RestController
@@ -40,7 +43,7 @@ public class RecordController {
     private final HistoryService historyService;
     private final FileService fileService;
 
-    // 3. 차량 출입 로그 기록
+    @Operation(summary = "차량 출입 기록 저장", description = "Flask 서버로 이미지 전달, AI 모델이 번호판 예측, S3에 이미지(차량, 번호판) 저장, 가장 정확도 높은 예측값 Record 인스턴스로 저장")
     @PostMapping
     public ResponseEntity<MultiResponseDto> recordLog(MultipartFile vehicleFile) throws IOException {
 
@@ -57,7 +60,7 @@ public class RecordController {
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
-    // 4. 날짜별 로그 조회 yy-MM-dd
+    @Operation(summary = "날짜별 기록 조회", description = "\"yy-MM-dd\" 형식의 날짜를 받아 기록 조회")
     @GetMapping("/date/{start}/{end}")
     public ResponseEntity<List<RecordResponseDto>> searchDate(@PathVariable String start, @PathVariable String end)
             throws ParseException {
@@ -67,7 +70,7 @@ public class RecordController {
 
     }
 
-    // 5. 차량 번호별 로그 조회
+    @Operation(summary = "차량 번호별 기록 조회", description = "차량 번호를 받아 기록을 조회")
     @GetMapping("/plate/{plate}")
     public ResponseEntity<List<RecordResponseDto>> searchPlate(@PathVariable String plate) {
 
@@ -76,7 +79,7 @@ public class RecordController {
 
     }
 
-    // 6. 로그 수정(admin)
+    @Operation(summary = "차량 출입 기록 수정(ADMIN)", description = "AI 모델이 예측한 값이 틀린 경우, 관리자가 확인 후 수정, S3에 저장된 번호판 이미지 삭제, 재학습을 위해 차량 이미지 relearn 폴더로 이동")
     @PutMapping
     public ResponseEntity<?> updateRecord(@RequestBody ArrayList<RecordRequestDto.Update> list,
             @AuthenticationPrincipal String memberId) throws IOException {
@@ -89,7 +92,7 @@ public class RecordController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    // 7. 로그 삭제(admin)
+    @Operation(summary = "차량 출입 기록 삭제(ADMIN)", description = "Record 인스턴스 삭제(연결된 Image, PredictedPlate도 삭제됨), S3에 저장된 이미지 삭제")
     @DeleteMapping
     public ResponseEntity<?> deleteRecord(@RequestBody ArrayList<RecordRequestDto.Delete> list,
             @AuthenticationPrincipal String memberId) {
