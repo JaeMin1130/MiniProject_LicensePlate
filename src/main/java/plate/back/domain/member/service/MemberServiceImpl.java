@@ -51,6 +51,7 @@ public class MemberServiceImpl implements MemberService{
         if (!option.isPresent()) {
             throw new CustomException(ErrorCode.Member_NOT_FOUND);
         }
+        
         log.info("아이디 검증 통과");
 
         // 비밀번호 검증
