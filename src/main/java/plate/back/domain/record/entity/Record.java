@@ -1,5 +1,7 @@
 package plate.back.domain.record.entity;
 
+import java.util.List;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -7,10 +9,12 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import plate.back.domain.image.entity.Image;
 import plate.back.domain.predictedPlate.entity.ModelType;
 import plate.back.global.utils.BaseTime;
 
@@ -35,6 +39,9 @@ public class Record extends BaseTime {
     @Column(nullable = false, length = 10)
     private String state;
 
+    @OneToMany
+    private List<Image> images;
+    
     @Builder
     public Record(ModelType modelType, String licensePlate, Double accuracy, String state) {
         this.modelType = modelType;

@@ -8,7 +8,11 @@ import lombok.Getter;
 public class ErrorResponseDto {
     private String message;
 
-    public static ErrorResponseDto of(CustomException e){
+    public static ErrorResponseDto from(CustomException e){
         return ErrorResponseDto.builder().message(e.getErrorCode().getMessage()).build();
+    }
+
+    public static ErrorResponseDto from(Exception e){
+        return ErrorResponseDto.builder().message(e.getMessage()).build();
     }
 }

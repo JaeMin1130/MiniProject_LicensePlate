@@ -27,10 +27,10 @@ public class Image {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer imageId;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "record_id")
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    private Record record;
+    // @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    // @JoinColumn(name = "record_id")
+    // @OnDelete(action = OnDeleteAction.CASCADE)
+    // private Record record;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -44,7 +44,7 @@ public class Image {
 
     @Builder
     public Image(Record record, ImageType imageType, String imageTitle, String imageUrl) {
-        this.record = record;
+        // this.record = record;
         this.imageType = imageType;
         this.imageTitle = imageTitle;
         this.imageUrl = imageUrl;

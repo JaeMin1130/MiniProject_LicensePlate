@@ -41,7 +41,7 @@ public class HistoryServiceImpl implements HistoryService {
     }
 
     @Override
-    public void createHistory(RecordRequestDto.Update resqDto, String previousText, String memberId, String taskType) {
+    public void createUpdateHistory(RecordRequestDto.Update resqDto, String previousText, String memberId, String taskType) {
 
         historyRepo.save(History.builder()
                 .recordId(resqDto.getRecordId())
@@ -53,7 +53,7 @@ public class HistoryServiceImpl implements HistoryService {
     }
 
     @Override
-    public void createHistory(RecordRequestDto.Delete resqDto, String memberId) {
+    public void createDeleteHistory(RecordRequestDto.Delete resqDto, String memberId) {
 
         historyRepo.save(History.builder()
                 .recordId(resqDto.getRecordId())

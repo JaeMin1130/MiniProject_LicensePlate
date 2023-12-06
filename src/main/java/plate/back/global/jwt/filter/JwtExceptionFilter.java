@@ -33,7 +33,8 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
             response.setCharacterEncoding("UTF-8");
             response.setStatus(customException.getErrorCode().getStatus().value());
             
-            objectMapper.writeValue(response.getWriter(), ErrorResponseDto.of(customException));
+            objectMapper.writeValue(response.getWriter(), ErrorResponseDto.from(customException));
+        
         } catch (JWTVerificationException e) {
 
             CustomException customException = new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
@@ -42,7 +43,7 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
             response.setCharacterEncoding("UTF-8");
             response.setStatus(customException.getErrorCode().getStatus().value());
             
-            objectMapper.writeValue(response.getWriter(), ErrorResponseDto.of(customException));
+            objectMapper.writeValue(response.getWriter(), ErrorResponseDto.from(customException));
         }
     }
 }
