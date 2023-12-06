@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import plate.back.domain.history.service.HistoryService;
 import plate.back.domain.record.dto.MultiResponseDto;
@@ -33,6 +34,7 @@ import plate.back.global.s3.service.FileService;
 import plate.back.global.utils.Base64ToMultipartFileConverter;
 
 @Tag(name = "Record API", description = "차량 출입 기록 CRUD")
+@Transactional
 @RequiredArgsConstructor
 @RequestMapping("/api/records")
 @RestController
@@ -53,6 +55,7 @@ public class RecordController {
 
         MultipartFile plateFile = Base64ToMultipartFileConverter
                 .convertBase64ToMultipartFile(flaskResponseDto.getPlateImg());
+
         Map<String, String> plateImgMap = fileService.uploadFile(plateFile, 1);
 
         MultiResponseDto responseDto = recordService.recordLog(flaskResponseDto, vehicleImgMap, plateImgMap);
@@ -66,6 +69,7 @@ public class RecordController {
             throws ParseException {
 
         List<RecordResponseDto> list = recordService.searchDate(start, end);
+
         return ResponseEntity.status(HttpStatus.OK).body(list);
 
     }
@@ -75,6 +79,7 @@ public class RecordController {
     public ResponseEntity<List<RecordResponseDto>> searchPlate(@PathVariable String plate) {
 
         List<RecordResponseDto> list = recordService.searchPlate(plate);
+        
         return ResponseEntity.status(HttpStatus.OK).body(list);
 
     }
@@ -86,7 +91,7 @@ public class RecordController {
 
         for (RecordRequestDto.Update resqDto : list) {
             String previousText = recordService.updateRecord(resqDto);
-            historyService.createHistory(resqDto, previousText, memberId, "update");
+            historyService.createUpdateHistory(resqDto, previousText, memberId, "update");
         }
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
@@ -99,7 +104,7 @@ public class RecordController {
 
         for (RecordRequestDto.Delete resqDto : list) {
             recordService.deleteRecord(resqDto);
-            historyService.createHistory(resqDto, memberId);
+            historyService.createDeleteHistory(resqDto, memberId);
         }
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

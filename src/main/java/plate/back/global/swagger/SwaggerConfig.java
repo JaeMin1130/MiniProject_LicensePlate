@@ -1,4 +1,4 @@
-package plate.back.global.config.swagger;
+package plate.back.global.swagger;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;

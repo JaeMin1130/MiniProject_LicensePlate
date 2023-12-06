@@ -9,8 +9,8 @@ public interface HistoryService {
 
     public List<HistoryResponseDto> getHistory();
 
-    public void createHistory(RecordRequestDto.Update resqDto, String currentText, String memberId, String taskType);
+    public void createUpdateHistory(RecordRequestDto.Update resqDto, String currentText, String memberId, String taskType);
 
-    // 오버로딩
-    public void createHistory(RecordRequestDto.Delete resqDto, String memberId);
+    public void createDeleteHistory(RecordRequestDto.Delete resqDto, String memberId);
+    
 }
