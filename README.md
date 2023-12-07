@@ -58,28 +58,31 @@
 - [x] 출입 기록 수정/삭제 히스토리 기능 
 
 ## 5. 서비스 아키텍처
-![image](https://github.com/JaeMin1130/MiniProject_LicensePlate/assets/98063854/51f47020-dab4-4188-9b3b-a2526080841c)
+![image](https://github.com/JaeMin1130/MiniProject_LicensePlate/assets/98063854/3cd99f3a-7882-4fd1-b309-5233dd35e9bf)
 
 ## 7. REST API 명세 
-### Spring Boot
-| ID | Method | URI | Params | Return | Description |
-| --- | --- | --- | --- | --- | --- |
-| 1 | POST  | api/members/sign-up | MemberDto  | Boolean | 회원가입 |
-| 2 | POST | api/members/sign-in | MemberDto  | MemberDto  | 로그인 |
-| 3 | POST | api/records | MultipartFile  | List<RecordDto> | 차량 출입 기록 |
-| 4 | GET | api/records/date/{date1}/{date2} | String, String  | List<RecordDto> | 날짜별 기록 조회 |
-| 5 | GET | api/records/plate/{plate} | String | List<RecordDto> | 차량 번호별 기록 조회 |
-| 7 | PUT | api/records | List<RecordDto> | Boolean | 기록 수정 |
-| 8 | DELETE              | api/records | List<RecordDto>  | Boolean | 기록 삭제 |
-| 6 | GET | api/records/history |  | List<HistoryDto> | 수정/삭제 기록 조회 |
+### Spring Boot(port:8080)
 
-### Flask
-| ID | Method | URI | Params | Return | Description |
-| --- | --- | --- | --- | --- | --- |
-| 3 | POST | api/records | MultipartFile file | PredictDto | AI 모델 번호판 예측 |
+| ID | Domain | Method | URI | Description |
+| --- | --- | --- | --- | --- |
+| 1 | member | POST  | api/members/sign-up | 회원가입 |
+| 2 | member | POST | api/members/sign-in | 로그인 |
+| 3 | record | POST | api/records | 차량 출입 기록 |
+| 4 | record | GET | api/records/date/{date1}/{date2} | 날짜별 기록 조회 |
+| 5 | record | GET | api/records/plate/{plate} | 차량 번호별 기록 조회 |
+| 6 | record | PUT | api/records | 기록 수정 |
+| 7 | record | DELETE              | api/records | 기록 삭제 |
+| 8 | history | GET | api/histories | 수정/삭제 기록 조회 |
+| 9 | refreshtoken | POST | api/reissue | Access Token 재발행 |
+
+### Flask(port:5000)
+
+| ID | Domain | Method | URI | Description |
+| --- | --- | --- | --- | --- |
+| 3 | record | POST | api/records | AI 모델 번호판 예측 |
 
 ## 8. DB 설계(ERD)
-![image](https://github.com/JaeMin1130/MiniProject_LicensePlate/assets/98063854/d23d592a-b65e-4f65-87c8-9cb688fbf6fd)
+![image](https://github.com/JaeMin1130/MiniProject_LicensePlate/assets/98063854/b87bc83b-c0fd-488e-a062-4f7e7492b798)
 
 ## 9. 시퀀스 다이어그램
 ![image](https://github.com/JaeMin1130/MiniProject_LicensePlate/assets/98063854/7916fabc-03d7-4593-bba2-d198cf1da670)
