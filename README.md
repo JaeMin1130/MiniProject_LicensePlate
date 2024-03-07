@@ -81,12 +81,41 @@
 
 ## 7. DB 설계(ERD)
 ![image](https://github.com/JaeMin1130/MiniProject_LicensePlate/assets/98063854/9e282ca5-41af-4036-94a9-0c92d77d85ab)
+## 8. 문제 해결
+- **Spring Boot**로 **RESTful API** 개발
+    - **관련 문제 해결**
+        - [**REST API URI 작성 규칙**](https://www.notion.so/REST-API-URI-790f97e2c2cc416c9e76d30c176b2912?pvs=21)
+        - [**서비스 구현 시 인터페이스를 구현하는 형태로 하는 이유**](https://www.notion.so/26467c3475cd4750ab4fff6738a92638?pvs=21)
+- **Spring Security**와 **JWT**를 활용한 사용자 인증/인가
+    - 로그인 시 Access Token, Refresh Token 생성 후 클라이언트에 전달
+    - 인증이 필요한 API 호출 시, Access Token 검중
+    - Access Token 만료 시, Refresh Token 검증 후 Access Token 재발급
+    - **관련 문제 해결**
+        - [JwtAuthenticationFilter는 어떤 필터를 상속받아야 할까](https://www.notion.so/JwtAuthenticationFilter-3b885cbabeaf484eb54357613088691c?pvs=21)
+        - [Filter **내에서 발생한 예외 처리하기**](https://www.notion.so/Filter-722dd2b5473643ddaca28b8075a364db?pvs=21)
+        - [API별 접근 권한 설정 시 주의할 점](https://www.notion.so/API-6520b5a5c5084d49894fe51cd855d2b6?pvs=21)
+        - [특정 API가 SecurityFilterChain을 안 거치게 하는 방법](https://www.notion.so/API-SecurityFilterChain-63cf54dcbe7849389328730aef5afd96?pvs=21)
+- **Flask**로 AI model 연동 후 Spring Boot 서버와 통신
+    - **WebClient**로 Flask 서버에 HTTP 요청(POST) 전송
+    - **관련 문제 해결**
+        - [**RestTemplate과 WebClient**](https://www.notion.so/RestTemplate-WebClient-67976b7f91114c0a95dde21703d021b0?pvs=21)
+- **AWS RDS**를 활용한 DB 생성, 데이터 모델링
+    - **@OneToOne**으로 엔티티 간 일대일 연관관계 설정
+    - **@ManyToOne**으로 엔티티 간 다대일 연관관계 설정
+        - **@OnDeletion**으로 부모 인스턴스 삭제 시 자식 인스턴스도 함께 삭제
+    - 설계한 스키마를 **ERD**로 시각화
+    - **관련 문제 해결**
+        - [**양방향 연관관계에서의 주의할 점( N:1 )**](https://www.notion.so/N-1-28a5b829a62747758573e697ed32d967?pvs=21)
+        - [엔티티 관계 설정(ERD)](https://www.notion.so/ERD-6a48dd3bd4d14d3ebe6d4ac4cbc15d93?pvs=21)
 
-## 8. 시퀀스 다이어그램
+- **AWS S3**의 버킷에 파일 업로드, 파일 이동, 파일 삭제 로직 구현
+    - 관리자가 번호판 수정 시, 모델 재학습을 위해 차량 파일은 relearn 폴더로 이동시키고, 잘못 예측한 번호판 파일은 삭제
+- springdoc-openapi의 **Swagger** API를 활용한 API 명세 생성
+    - [Swagger-UI API 명세 보러 가기](https://github.com/JaeMin1130/MiniProject_LicensePlate/blob/back_spring/docs/APIDocument.pdf)
+    - **관련 문제 해결**
+        - [SpringBoot 3.x 버전 이상 프로젝트에 Swagger 적용 오류 해결 ](https://www.notion.so/SpringBoot-3-x-Swagger-ecc3efeae07c46a0b645803e70f04587?pvs=21)
+## 9. 시퀀스 다이어그램
 ![image](https://github.com/JaeMin1130/MiniProject_LicensePlate/assets/98063854/0f1cec48-5445-4b6a-8285-67109799cc9a)
 
-## 9. UML(Class Diagram)
+## 10. UML(Class Diagram)
 ![image](https://github.com/EUNJIN6131/MiniProject_LicensePlate/assets/98063854/7928338d-5949-4158-8b05-b5059c61c8cc)
-
-## 10. 개발 노트 
-<a href="https://shrub-snap-550.notion.site/CRUD-566be659b7bf4693a6515f408cf2f1d9?pvs=4">개발 노트 보러 가기  <img width="23" src="https://upload.wikimedia.org/wikipedia/commons/e/e9/Notion-logo.svg"> </a>****
